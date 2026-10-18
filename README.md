@@ -160,7 +160,7 @@ never put that version online.
 - The Comparison ladder above: every rung scored on the same questions by an
   automatic grader that checks each claim against the whole course Library.
 - The grader was tested with planted false claims before it was trusted.
-- The checker was compared with hand labels on 30 answers: it agreed on 25,
+- The checker was compared with separate labels on 30 sampled answers: it agreed on 25,
   missed 2 bad answers (the limit set in advance was 2) and wrongly flagged 3.
 - 9 held-back test questions are kept unopened for one final run.
 
