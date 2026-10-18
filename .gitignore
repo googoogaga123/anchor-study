@@ -1,0 +1,44 @@
+# macOS
+.DS_Store
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Secrets — never commit the OpenAI key
+.env
+.env.*
+!.env.example
+
+# Claude Code local settings (machine-specific)
+.claude/settings.local.json
+
+# Model caches / large downloads
+.cache/
+models/
+
+# Large, regenerable build artefacts. The small *_report.json files are kept:
+# they are the parse summary the report is built from.
+parsed/*__pdf.json
+parsed/*__docx.json
+parsed/sheets.duckdb
+
+# Embedding caches: regenerable with scripts/embed.py
+parsed/embeddings/
+
+# Chat transcript copy (local only)
+chat_index.html
+
+# Uploaded Libraries (web/ingest.py): users' own files, never committed
+libraries/
+
+# Static build of the public pages for Vercel (scripts/build_site.py) and its project link
+site/
+.vercel/
+
+# Working notes kept on this Mac only (owner's call, 18 Oct)
+audit.md
+HANDOFF.md
+makendra*.md

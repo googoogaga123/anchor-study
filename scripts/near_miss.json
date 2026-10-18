@@ -1,0 +1,45 @@
+{
+  "_README": "For not_in_docs Build questions whose Library holds something close to the answer. A refusal is GENUINE when the setup retrieved evidence matching one of these patterns (regex, case-insensitive) and still said 'not found'; HOLLOW when it retrieved none of it, so it refused without seeing the near-miss. Questions not listed have no near-miss in the Library: their refusals are counted as refused only. Build set only (the original questions and the added group) - the Test set stays closed.",
+  "Q21": {
+    "why": "IS114 PDF p. 3 assessments table: \"Check OASIS for the exam date/time/venue\"; no date is given",
+    "patterns": [
+      "Check OASIS for the exam date"
+    ]
+  },
+  "Q22": {
+    "why": "the sections table lists G1 to G11; there is no G12",
+    "patterns": [
+      "\\|\\s*G11\\s*\\|"
+    ]
+  },
+  "Q25": {
+    "why": "lecturer [redacted] is named in the sections table, but only TA emails are listed",
+    "patterns": [
+      "\\b[redacted]\\b"
+    ]
+  },
+  "Q29": {
+    "why": "the textbook is named (IS114 PDF p. 2), with no chapter list",
+    "patterns": [
+      "Computer Science Illuminated"
+    ]
+  },
+  "A09": {
+    "why": "the sample midterm has Q1 to Q16; there is no Q17",
+    "patterns": [
+      "\\bQ16\\)"
+    ]
+  },
+  "A11": {
+    "why": "IS114 PDF p. 9 gives the Student Services Hub's location, not the Wellness Centre's",
+    "patterns": [
+      "Basement 1 Concourse"
+    ]
+  },
+  "A13": {
+    "why": "IS114 PDF p. 3: each revision quiz is open for 2 weeks; no time limit per attempt is given",
+    "patterns": [
+      "ends 2 weeks later"
+    ]
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "_README": "Phase 2 parse-ceiling probes. For each answerable eval question, the minimum evidence that must survive parsing for the answer to be findable at all. If a probe fails, no retriever in later phases can ever get that question right. 'text' = substrings searched in the parsed output of that file (any one alternative counts). 'cell' = sheet/cell address that must hold that value. 'manual' = needs the owner's eye, no string test is honest.",
+  "week12hints.txt": [
+    {
+      "id": "Q01",
+      "answer": "FileZilla",
+      "text": [
+        "FileZilla"
+      ]
+    },
+    {
+      "id": "Q02",
+      "answer": "nmap",
+      "text": [
+        "nmap"
+      ]
+    },
+    {
+      "id": "Q13",
+      "answer": "7001",
+      "text": [
+        "7001"
+      ]
+    },
+    {
+      "id": "Q15",
+      "answer": "3 to 6",
+      "text": [
+        "3 to 6",
+        "3-6",
+        "3 - 6"
+      ]
+    }
+  ],
+  "IS114 AY26-T1 Course Content, Student Edition.docx": [
+    {
+      "id": "Q04",
+      "answer": "Respondus LockDown Browser",
+      "text": [
+        "Respondus"
+      ]
+    },
+    {
+      "id": "Q05",
+      "answer": "Li Ka Shing Library Level 5; 9am-12pm, 1.30pm-6pm",
+      "text": [
+        "Li Ka Shing"
+      ]
+    },
+    {
+      "id": "Q05b",
+      "answer": "opening hours",
+      "text": [
+        "1.30pm",
+        "1.30 pm",
+        "1:30pm"
+      ]
+    },
+    {
+      "id": "Q06",
+      "answer": "The content in the course document",
+      "text": [
+        "content in this document",
+        "contradicts the course content"
+      ],
+      "note": "Probe corrected: the eval CSV paraphrases this as 'the course document'; the file says 'this document'."
+    },
+    {
+      "id": "Q20",
+      "answer": "114",
+      "text": [
+        "1 to 114",
+        "1 - 114",
+        "1-114"
+      ]
+    }
+  ],
+  "MidtermSampleSolutions.pdf": [
+    {
+      "id": "Q03",
+      "answer": "negligible transaction costs, clear property rights",
+      "text": [
+        "transaction cost"
+      ]
+    },
+    {
+      "id": "Q03b",
+      "answer": "property rights",
+      "text": [
+        "property right"
+      ]
+    },
+    {
+      "id": "Q18",
+      "answer": "$6,500",
+      "text": [
+        "6,500",
+        "6500"
+      ]
+    },
+    {
+      "id": "Q19",
+      "answer": "$950",
+      "text": [
+        "950"
+      ]
+    },
+    {
+      "id": "Q17",
+      "answer": "$28 (sum of A+B+C first cup)",
+      "manual": "p.10 Q11 table: the per-consumer willingness-to-pay table must come through as a table with its rows intact. $28 is a SUM the model must compute from it, so it is not expected as a literal string. Check the table by eye."
+    }
+  ],
+  "3A-Adjust-Class-Worksheet (Answer Key) (1).xlsx": [
+    {
+      "id": "Q11",
+      "answer": "14000",
+      "cell": "Income Statement!C13"
+    },
+    {
+      "id": "Q12",
+      "answer": "72000",
+      "cell": "Act2C-Trial Balance!I20"
+    },
+    {
+      "id": "Q14",
+      "answer": "2000",
+      "cell": "Adj Journal Entries!H10"
+    },
+    {
+      "id": "Q16",
+      "answer": "10000",
+      "cell": "Statement of Changes in Equity!C6"
+    }
+  ],
+  "IS114_eLearn_Quizzes_tab.png": [
+    {
+      "id": "Q07",
+      "answer": "Quizzes (pink arrow)",
+      "manual": "The answer IS an arrow, not text. OCR can at best recover the tab labels; the Diagram description must say which tab the arrow points at."
+    }
+  ],
+  "IS114_Academic_Violation_Reporting_Procedure.png": [
+    {
+      "id": "Q08",
+      "answer": "preliminary investigation; discuss with the representative of the school",
+      "manual": "Flowchart top row, in order."
+    },
+    {
+      "id": "Q09",
+      "answer": "3rd+ violations / Council review cases",
+      "manual": "Dashed right-hand path plus footnotes 2 and 3."
+    },
+    {
+      "id": "Q10",
+      "answer": "prepare notice + inform student; update ISIS",
+      "manual": "Last two steps, middle and bottom-left."
+    }
+  ],
+  "IS114 AY26-T1 Course Content, Student Edition.pdf": [
+    {
+      "id": "INTEGRITY-sections",
+      "answer": "sections table G1-G11 intact",
+      "text": [
+        "G11"
+      ],
+      "why": "All 10 not_in_docs questions are near-misses on this file. Q22 asks about section G12; if this table does not parse, the system refuses for the wrong reason and scores a hollow pass."
+    },
+    {
+      "id": "INTEGRITY-schedule",
+      "answer": "schedule reaches Week 13",
+      "text": [
+        "|     13 | 9/11            | Trial Exam",
+        "Trial Exam"
+      ],
+      "why": "Q23 asks about Week 14. The schedule must visibly end at 13.",
+      "note": "Probe corrected: the Week column holds bare numbers (|  13  |), not 'Week 13'. The schedule must visibly END at 13."
+    },
+    {
+      "id": "INTEGRITY-oasis",
+      "answer": "exam date points to OASIS",
+      "text": [
+        "OASIS"
+      ],
+      "why": "Q21 asks the final exam date; p.4 only says to check OASIS."
+    },
+    {
+      "id": "INTEGRITY-absent-G12",
+      "answer": "G12 must NOT appear",
+      "absent": [
+        "G12"
+      ],
+      "why": "If G12 appears, either the file changed or parsing invented it."
+    },
+    {
+      "id": "INTEGRITY-absent-W14",
+      "answer": "Week 14 must NOT appear",
+      "absent": [
+        "Week 14",
+        "Week14",
+        "|     14 |"
+      ],
+      "why": "Same: the near-miss only works if Week 14 is genuinely absent."
+    }
+  ]
+}

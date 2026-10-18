@@ -1,0 +1,113 @@
+/* Anchor's look, shared by the front page and the app.
+   After anythingllm.com: Clash Display headings, Plus Jakarta Sans text,
+   slate neutrals, near-black buttons, light sections fading from slate-200
+   to slate-50 and dark zinc-950 sections. Fonts load from Fontshare and
+   Google Fonts (see the <link> tags); system fonts stand in offline. */
+:root {
+  color-scheme: light;
+  --bg: #f8fafc;          /* slate-50 */
+  --panel: #ffffff;
+  --soft: #f1f5f9;        /* slate-100 */
+  --line: #e2e8f0;        /* slate-200 */
+  --line-2: #cbd5e1;      /* slate-300 */
+  --mute: #64748b;        /* slate-500 */
+  --mute-2: #475569;      /* slate-600 */
+  --ink: #0f172a;         /* slate-900 */
+  --ink-strong: #020617;  /* slate-950 */
+  --dark: #09090b;        /* zinc-950 */
+  --dark-2: #18181b;      /* zinc-900 */
+  --on-dark: #ffffff;
+  --on-dark-mute: #a1a1aa; /* zinc-400 */
+  --warn-bg: #fffbeb; --warn-ink: #92400e; --warn-line: #fcd34d;
+  --good: #059669;        /* emerald-600 */
+  --font-display: "Clash Display", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --shadow-media: 0 30px 60px -24px rgba(2, 6, 23, .28), 0 0 0 1px rgba(2, 6, 23, .06);
+  --shadow-card: 0 1px 2px rgba(2, 6, 23, .05), 0 8px 24px -12px rgba(2, 6, 23, .12);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.6 var(--font-sans); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -.01em; }
+a { color: inherit; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+
+/* Buttons */
+.btn { font: 600 14px/1 var(--font-sans); display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-decoration: none;
+  border-radius: 999px; padding: 11px 18px; border: 1px solid var(--ink-strong); background: var(--ink-strong); color: #fff; }
+.btn:hover { background: #1e293b; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-2); }
+.btn.ghost:hover { background: var(--soft); }
+.btn.small { padding: 7px 13px; font-size: 13px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.on-dark .btn { background: #fff; color: var(--ink-strong); border-color: #fff; }
+.on-dark .btn.ghost { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .3); }
+
+/* Wordmark */
+.brand { display: inline-flex; align-items: center; gap: 9px; font: 600 21px/1 var(--font-display); letter-spacing: -.01em; text-decoration: none; color: var(--ink-strong); }
+.brand svg { width: 24px; height: 24px; }
+
+/* The composer: a rounded box with a round send button (after Manus) */
+.composer { background: var(--panel); border: 1px solid var(--line); border-radius: 26px; box-shadow: var(--shadow-card); padding: 16px 16px 12px 22px; text-align: left; }
+.composer textarea { display: block; width: 100%; border: 0; outline: 0; resize: none; background: transparent; color: var(--ink);
+  font: 16px/1.5 var(--font-sans); min-height: 52px; padding: 2px 0; }
+.composer .row { display: flex; align-items: center; gap: 8px; justify-content: space-between; margin-top: 6px; }
+.composer .hint { font-size: 12.5px; color: var(--mute); }
+.send { flex: none; width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--ink-strong); color: #fff; cursor: pointer;
+  display: grid; place-items: center; }
+.send:hover { background: #1e293b; }
+.send:disabled { opacity: .4; cursor: not-allowed; }
+.send svg { width: 20px; height: 20px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: 500 13px/1.3 var(--font-sans); border: 1px solid var(--line); background: var(--panel); color: var(--mute-2); border-radius: 999px;
+  padding: 7px 13px; cursor: pointer; text-align: left; }
+.chip:hover, .chip[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); }
+
+/* An answer: the question, then the card */
+.ans-q { margin: 26px 0 10px auto; width: fit-content; max-width: 85%; background: var(--ink-strong); color: #fff;
+  border-radius: 18px 18px 4px 18px; padding: 10px 15px; font-weight: 500; }
+.ans-card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; box-shadow: var(--shadow-card);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; text-align: left; }
+.ans-card.has-pic { grid-template-columns: minmax(0, 1fr) minmax(0, 260px); }
+.ans-route { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--mute); text-transform: uppercase; letter-spacing: .04em; }
+.ans-route::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
+.ans-final { font-size: 17px; line-height: 1.5; font-weight: 600; color: var(--ink-strong); margin: 8px 0 0; }
+.ans-final.nf { color: var(--mute-2); font-weight: 500; }
+.ans-how { margin-top: 14px; font-size: 12.5px; font-weight: 600; color: var(--mute); }
+ol.ans-steps { list-style: none; counter-reset: s; margin: 8px 0 0; padding: 0; }
+ol.ans-steps li { counter-increment: s; position: relative; padding-left: 32px; margin: 12px 0; color: var(--mute-2); font-size: 14.5px; }
+ol.ans-steps li::before { content: counter(s); position: absolute; left: 0; top: 1px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--soft); color: var(--ink); font: 600 12px/22px var(--font-sans); text-align: center; }
+.ans-quote { display: block; margin-top: 6px; padding: 6px 10px; border-left: 3px solid var(--line-2); background: var(--bg); border-radius: 0 8px 8px 0;
+  font-size: 13.5px; font-style: italic; color: var(--mute-2); }
+.ans-cite { display: inline-flex; align-items: center; gap: 5px; overflow-wrap: anywhere; margin-top: 6px; font-size: 12.5px; font-weight: 500; text-decoration: none; color: var(--ink);
+  background: var(--soft); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; }
+a.ans-cite:hover { border-color: var(--ink); }
+.ans-cite svg { width: 12px; height: 12px; }
+/* A step's Source button: opens the Sources panel at the excerpt the step rests on */
+.ans-src { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; max-width: 100%; cursor: pointer; font: 600 12.5px/1.3 var(--font-sans);
+  color: var(--ink); background: var(--panel); border: 1px solid var(--line-2); border-radius: 999px; padding: 3px 11px 3px 9px; text-align: left; }
+.ans-src span { font-weight: 500; color: var(--mute-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ans-src:hover { border-color: var(--ink); background: var(--soft); }
+.ans-src svg { width: 12px; height: 12px; flex: none; }
+.ans-unsure { background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--warn-line); border-radius: 12px; padding: 9px 12px; font-size: 13.5px; margin-bottom: 4px; }
+.ans-unsure ul { margin: 4px 0 0; padding-left: 18px; }
+.ans-card figure { margin: 0; border: 1px solid var(--line); border-radius: 14px; padding: 8px; background: var(--bg); }
+.ans-card figure img { width: 100%; border-radius: 9px; display: block; }
+.ans-card figcaption { font-size: 12.5px; color: var(--mute-2); margin-top: 7px; overflow-wrap: anywhere; }
+.ans-meta { font-size: 12px; color: var(--mute); margin-top: 10px; }
+/* A streamed answer: a caret on the text being written, a note that it is not checked yet */
+.caret { display: inline-block; width: .5em; height: 1.05em; margin-left: 2px; vertical-align: -.15em; border-radius: 2px;
+  background: currentColor; opacity: .55; animation: blink 1s steps(2, start) infinite; }
+@keyframes blink { to { visibility: hidden; } }
+.ans-final.pending { color: var(--mute); font-weight: 500; font-size: 15px; }
+.ans-status { display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 600; color: var(--mute-2); background: var(--soft);
+  border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; width: fit-content; margin-bottom: 10px; }
+.ans-status .thinking { gap: 4px; }
+.ans-status .thinking i { width: 6px; height: 6px; }
+.thinking { display: flex; align-items: center; gap: 10px; color: var(--mute-2); font-weight: 500; }
+.thinking i { width: 8px; height: 8px; border-radius: 50%; background: var(--ink); animation: pulse 1.2s ease-in-out infinite; }
+.thinking i:nth-child(2) { animation-delay: .15s; } .thinking i:nth-child(3) { animation-delay: .3s; }
+@keyframes pulse { 0%, 100% { opacity: .2; transform: scale(.8); } 50% { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .thinking i, .caret { animation: none; opacity: .6; } }
+@media (max-width: 720px) { .ans-card.has-pic { grid-template-columns: minmax(0, 1fr); } }

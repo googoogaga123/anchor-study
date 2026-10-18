@@ -1,0 +1,154 @@
+[
+ {
+  "id": "A06",
+  "label": "Quiz marks",
+  "question": "How many IS114 revision quizzes do I need to complete to get full marks for them?",
+  "final_answer": "You need to complete any 10 out of 12 IS114 Revision Quizzes to get full marks (10%) for them.",
+  "not_found": false,
+  "steps": [
+   {
+    "text": "The course awards full marks for Revision Quizzes when any 10 out of 12 quizzes are completed, with 1% earned for each completion and the total capped at 10%.",
+    "quote": "Complete any 10 out of 12 Revision Quizzes",
+    "source": {
+     "file": "IS114 AY26-T1 Course Content, Student Edition.pdf",
+     "loc": "pp. 2-4"
+    }
+   },
+   {
+    "text": "The 10% cap confirms that completing 10 quizzes is enough for full marks.",
+    "quote": "Capped at 10% total for the whole term.",
+    "source": {
+     "file": "IS114 AY26-T1 Course Content, Student Edition.pdf",
+     "loc": "pp. 2-4"
+    }
+   }
+  ],
+  "pictures": [],
+  "route": {
+   "path": "sql -> hybrid"
+  },
+  "unsure": false,
+  "unsure_reasons": [],
+  "from_run": "runs/routed__added__20261018T070746Z.jsonl"
+ },
+ {
+  "id": "A13",
+  "label": "Quiz time limit",
+  "question": "Is there a time limit once I open an IS114 revision quiz?",
+  "final_answer": "A revision quiz is available from Monday 00:00 until two weeks later on Sunday 23:59. Your materials do not say whether there is a separate time limit once you open the quiz.",
+  "not_found": false,
+  "steps": [
+   {
+    "text": "The revision quiz availability period is from Monday at 00:00 until two weeks later on Sunday at 23:59.",
+    "quote": "Each quiz starts on Mondays 00:00, ends 2 weeks later on Sunday 23:59",
+    "source": {
+     "file": "IS114 AY26-T1 Course Content, Student Edition.pdf",
+     "loc": "pp. 2-4"
+    }
+   },
+   {
+    "text": "The materials specify the quiz availability window, but do not state a separate time limit that begins when you open a quiz.",
+    "quote": "Each quiz starts on Mondays 00:00, ends 2 weeks later on Sunday 23:59",
+    "source": {
+     "file": "IS114 AY26-T1 Course Content, Student Edition.pdf",
+     "loc": "pp. 2-4"
+    }
+   }
+  ],
+  "pictures": [],
+  "route": {
+   "path": "hybrid"
+  },
+  "unsure": false,
+  "unsure_reasons": [],
+  "from_run": "runs/routed__added__20261018T070746Z.jsonl"
+ },
+ {
+  "id": "Q18",
+  "label": "Midterm maths",
+  "question": "In sample midterm Q16, what is the monopolist's total daily profit under the profit-maximizing strategy?",
+  "final_answer": "The monopolist's total daily profit under the profit-maximizing strategy is $6,500.",
+  "not_found": false,
+  "steps": [
+   {
+    "text": "The sample solution calculates profit as (14−6)×500 + (8−3)×500 = 6,500.",
+    "quote": "The total profit is\n\n$$(14-6)\\cdot 500+(8-3)\\cdot 500=6,500.$$",
+    "source": {
+     "file": "MidtermSampleSolutions.pdf",
+     "loc": "pp. 19-20"
+    }
+   }
+  ],
+  "pictures": [],
+  "route": {
+   "path": "sql -> hybrid"
+  },
+  "unsure": false,
+  "unsure_reasons": [],
+  "from_run": "runs/routed__20261018T070432Z.jsonl"
+ },
+ {
+  "id": "Q08",
+  "label": "Read a flowchart",
+  "question": "In the academic violation reporting procedure, what are the first two things the school does after discovering a violation?",
+  "final_answer": "After discovering an academic violation, the school first conducts a preliminary investigation and saves all suspicious work. It then discusses the case with the representative of the school.",
+  "not_found": false,
+  "steps": [
+   {
+    "text": "The first action after discovering an academic violation is for the school to conduct a preliminary investigation and save all suspicious work.",
+    "quote": "Upon discovery of an academic violation, the school^1 shall",
+    "source": {
+     "file": "IS114_Academic_Violation_Reporting_Procedure.png",
+     "loc": "How to read it (following the confirmed connections)"
+    }
+   },
+   {
+    "text": "The second action is to discuss the case with the representative of the school.",
+    "quote": "Discuss the case with the representative of the school",
+    "source": {
+     "file": "IS114_Academic_Violation_Reporting_Procedure.png",
+     "loc": "How to read it (following the confirmed connections)"
+    }
+   }
+  ],
+  "pictures": [
+   {
+    "file": "IS114_Academic_Violation_Reporting_Procedure.png",
+    "loc": "",
+    "kind": "flowchart",
+    "note": "Based on a computer reading of the flowchart IS114_Academic_Violation_Reporting_Procedure.png - check the picture.",
+    "image": "/static/samples/IS114_Academic_Violation_Reporting_Procedure.png"
+   }
+  ],
+  "route": {
+   "path": "hybrid"
+  },
+  "unsure": false,
+  "unsure_reasons": [],
+  "from_run": "runs/routed__20261018T070432Z.jsonl"
+ },
+ {
+  "id": "Q11",
+  "label": "Spreadsheet figure",
+  "question": "What is Eagle Soccer Academy's net profit for December (pre-IFRS 18 format)?",
+  "final_answer": "Eagle Soccer Academy's net profit for December (pre-IFRS 18 format) is 14,000.",
+  "not_found": false,
+  "steps": [
+   {
+    "text": "The Income Statement lists the net profit as 14,000.",
+    "quote": "Income Statement!C13 = 14000 (row: Net Profit)",
+    "source": {
+     "file": "3A-Adjust-Class-Worksheet (Answer Key) (1).xlsx",
+     "loc": "Income Statement!C13"
+    }
+   }
+  ],
+  "pictures": [],
+  "route": {
+   "path": "sql"
+  },
+  "unsure": false,
+  "unsure_reasons": [],
+  "from_run": "runs/routed__20261018T070432Z.jsonl"
+ }
+]

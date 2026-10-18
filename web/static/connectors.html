@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en"><head>
+<!--#head-->
+<title>Connectors · Anchor</title>
+<meta name="description" content="Coming soon: connect Google Drive, OneDrive, Notion, your course site and more, and Anchor keeps your Library in sync.">
+<style>
+.apps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.app { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 20px; display: grid; gap: 12px; align-content: start; position: relative; }
+.app .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.mono { width: 46px; height: 46px; border-radius: 13px; display: grid; place-items: center; font: 600 19px/1 var(--font-display); color: #fff; }
+.app h3 { margin: 0; font: 600 16.5px/1.3 var(--font-sans); color: var(--ink-strong); }
+.app p { margin: 0; font-size: 14px; color: var(--mute-2); }
+.group { margin: 40px 0 14px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--mute); }
+.group:first-of-type { margin-top: 0; }
+@media (max-width: 1000px) { .apps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .apps { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+<!--#nav-->
+
+<header class="page-hero"><div class="inner">
+  <span class="badge soon">Coming soon</span>
+  <h1>Your course, wherever it lives.</h1>
+  <p class="sub">Connect the apps your course files already sit in, and Anchor keeps your Library in sync: new slides, updated notes and fresh readings, ready to ask about. Connectors are on the way. None are live yet.</p>
+  <div class="actions"><a class="btn" href="/pricing">Connectors come with Pro</a><a class="btn ghost" href="/app">Upload files today</a></div>
+</div></header>
+
+<section class="block"><div class="inner" id="apps"></div></section>
+
+<section class="steps-sec" style="background:var(--panel)"><div class="inner">
+  <div class="kicker">How it will work</div>
+  <h2 style="margin-top:12px">Connect once. Stay in sync.</h2>
+  <div class="steps four">
+    <div><div class="n">1</div><h3>Connect</h3><p>Sign in to the app from Anchor. You choose what it may read.</p></div>
+    <div><div class="n">2</div><h3>Pick folders or courses</h3><p>Only what you pick joins your Library, nothing else.</p></div>
+    <div><div class="n">3</div><h3>Stay in sync</h3><p>New and changed files are read automatically, just like a file you drop in.</p></div>
+    <div><div class="n">4</div><h3>Remove anytime</h3><p>Disconnect and its files leave every search index.</p></div>
+  </div>
+</div></section>
+
+<section class="cta"><div class="inner">
+  <h2>Until then, drag and drop.</h2>
+  <a class="btn" href="/app">Start free trial</a>
+</div></section>
+
+<!--#footer-->
+<script>
+// Planned connectors: names and what each would bring in. None is live; each says so.
+const GROUPS = [
+  ["Cloud storage", [
+    ["Google Drive", "Folders of slides, readings and notes.", "#1a73e8"],
+    ["OneDrive", "Your Microsoft 365 course folders.", "#0364b8"],
+    ["Dropbox", "Shared folders from your study group.", "#0061fe"],
+    ["Box", "Files your school shares through Box.", "#0061d5"]]],
+  ["Course sites", [
+    ["SMU eLearn", "Course content and announcements from your modules.", "#8a1538"],
+    ["Canvas", "Modules, pages and files from each course.", "#e13f2b"],
+    ["Moodle", "Course resources and readings.", "#f98012"],
+    ["Google Classroom", "Materials your teachers post.", "#188038"]]],
+  ["Notes and docs", [
+    ["Notion", "Your study pages and databases.", "#191919"],
+    ["OneNote", "Notebooks from class.", "#7719aa"],
+    ["Obsidian", "Your Markdown vault.", "#7c3aed"],
+    ["Google Docs", "Docs you write or share.", "#4285f4"]]],
+  ["Lectures and messages", [
+    ["YouTube", "Transcripts of recorded lectures.", "#ff0033"],
+    ["Zoom", "Transcripts of class recordings.", "#0b5cff"],
+    ["Microsoft Teams", "Files shared in your class teams.", "#5059c9"],
+    ["Outlook and Gmail", "Course emails and their attachments.", "#0f6cbd"]]],
+];
+document.getElementById("apps").innerHTML = GROUPS.map(([g, apps]) => `<div class="group">${esc(g)}</div><div class="apps">` +
+  apps.map(([name, what, color]) => `<div class="app"><div class="top"><span class="mono" style="background:${color}" aria-hidden="true">${esc(name[0])}</span>
+    <span class="badge soon">Soon</span></div><h3>${esc(name)}</h3><p>${esc(what)}</p></div>`).join("") + `</div>`).join("");
+</script>
+</body></html>

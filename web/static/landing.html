@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en"><head>
+<!--#head-->
+<title>Anchor — ask your course materials anything</title>
+<meta name="description" content="Anchor answers from your own course files, quotes the exact line, links to the page, and says plainly when your materials don't cover something - built to cut made-up answers.">
+<style>
+.hero { background: linear-gradient(to bottom, #e2e8f0, var(--bg)); padding: 64px 0 40px; text-align: center; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--mute-2); background: rgba(255, 255, 255, .6);
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px; }
+.eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
+.hero h1 { font-size: clamp(42px, 7.4vw, 82px); line-height: 1.02; letter-spacing: -.025em; color: var(--ink-strong); margin: 22px auto 18px; max-width: 900px; }
+.hero .sub { font-size: clamp(16px, 2vw, 19px); color: var(--mute-2); max-width: 680px; margin: 0 auto 34px; }
+.try { max-width: 780px; margin: 0 auto; }
+.try .label { font-size: 12.5px; font-weight: 600; color: var(--mute); text-transform: uppercase; letter-spacing: .05em; margin: 18px 0 9px; }
+.try .chips { justify-content: center; }
+.send.nudge { animation: nudge 1.6s ease-in-out 2; }
+@keyframes nudge { 0%, 100% { box-shadow: 0 0 0 0 rgba(2, 6, 23, .35); } 50% { box-shadow: 0 0 0 9px rgba(2, 6, 23, 0); } }
+#reply { margin-top: 6px; text-align: left; }
+#reply .saved { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; margin-top: 12px; font-size: 13px; color: var(--mute); }
+.fade { animation: fade .45s ease-out both; }
+@keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.hero-media { max-width: 1080px; margin: 64px auto 0; }
+@media (max-width: 860px) { .hero { padding-top: 40px; } }
+@media (prefers-reduced-motion: reduce) { .fade, .send.nudge { animation: none; } }
+</style></head>
+<body>
+<!--#nav-->
+
+<header class="hero"><div class="inner">
+  <span class="eyebrow">Built to cut made-up answers</span>
+  <h1>Ask your course materials anything.</h1>
+  <p class="sub">Anchor answers from your own notes, PDFs, slides and spreadsheets. It quotes the exact words, shows where they came from, and says plainly when your materials don't cover something, instead of making it up.</p>
+  <div class="try">
+    <form class="composer" id="try">
+      <textarea id="tq" rows="2" aria-label="Your question"></textarea>
+      <div class="row"><span class="hint">A sample course Library is loaded · press send</span><button class="send" id="tsend" aria-label="See the answer"></button></div>
+    </form>
+    <div class="label">Or try</div>
+    <div class="chips" id="chips"></div>
+    <div id="reply"></div>
+  </div>
+  <div class="hero-media"><div class="media" data-video="/static/demos/hero.mp4" data-label="Anchor answering two questions about a course"></div></div>
+</div></header>
+
+<section class="accord" id="files"><div class="inner">
+  <div class="kicker">No setup</div>
+  <h2>Drop in your files. Ask away.</h2>
+  <div class="grid">
+    <div class="media" data-video="/static/demos/upload.mp4" data-label="A PDF dragged into the chat, read, then asked about"></div>
+    <div class="acc">
+      <details open><summary>Your course files</summary>
+        <p>Drag PDFs, Word documents, slides, notes, pictures and spreadsheets straight into the chat. Anchor reads each one once, then answers from it every time.</p>
+        <a class="more" href="/uploads">What Anchor reads <span aria-hidden="true">→</span></a></details>
+      <details><summary>Graphs, flowcharts and screenshots</summary>
+        <p>Pictures get a written description so answers can use them, and the picture appears beside any answer that rests on one.</p></details>
+      <details><summary>Spreadsheets</summary>
+        <p>Every cell is kept with its row and column labels, so a question about a figure is answered from the exact cell.</p></details>
+      <details><summary>Private to you</summary>
+        <p>Your Library is yours alone: nothing you add is shared with other users. Delete a file and it leaves every search index.</p></details>
+      <details><summary>Connectors <span class="badge soon" style="margin-left:auto;margin-right:12px">Soon</span></summary>
+        <p>Keep your Library in sync with Google Drive, OneDrive, Notion and your course site.</p>
+        <a class="more" href="/connectors">See connectors <span aria-hidden="true">→</span></a></details>
+    </div>
+  </div>
+</div></section>
+
+<section class="feature soft" id="sources"><div class="inner">
+  <div class="text">
+    <div class="kicker">Sources on every answer</div>
+    <h2>Check any answer in one click.</h2>
+    <p>Each step quotes the words it rests on. Its Source button opens the excerpt beside your chat with those words marked, and one more click opens the file at that page, line or cell.</p>
+    <p>If a step can't be matched to your files, the answer is marked <b>Unsure</b> and says which check failed.</p>
+  </div>
+  <div class="media" data-video="/static/demos/citations.mp4" data-label="An answer's source opened beside the chat"></div>
+</div></section>
+
+<section class="feature dark flip on-dark"><div class="inner">
+  <div class="text">
+    <div class="kicker">Honest about gaps</div>
+    <h2>It tells you when your materials don't say.</h2>
+    <p>Ask something your files don't cover, and Anchor says so instead of guessing. Ask something they only half cover, and you get that half, plus a plain note about what's missing.</p>
+  </div>
+  <div class="media" data-video="/static/demos/gaps.mp4" data-label="Anchor saying what the materials don't cover"></div>
+</div></section>
+
+<section class="feature"><div class="inner">
+  <div class="text">
+    <div class="kicker">Pictures, too</div>
+    <h2>Reads your flowcharts, graphs and screenshots.</h2>
+    <p>Pictures in your files are described so answers can use them. When an answer rests on one, Anchor shows the picture right beside it, so you can check the reading at a glance.</p>
+  </div>
+  <div class="media" data-video="/static/demos/pictures.mp4" data-label="An answer shown beside the flowchart it rests on"></div>
+</div></section>
+
+<section class="feature soft flip"><div class="inner">
+  <div class="text">
+    <div class="kicker">Spreadsheets</div>
+    <h2>Numbers straight from the cell.</h2>
+    <p>Questions about figures go to your spreadsheets first. The answer names the exact cell, and a click takes you to it.</p>
+  </div>
+  <div class="media" data-video="/static/demos/spreadsheet.mp4" data-label="A figure answered from a spreadsheet cell"></div>
+</div></section>
+
+<section class="phone dark on-dark"><div class="inner">
+  <div>
+    <div class="kicker">On your phone, too</div>
+    <h2>Your course, in your pocket.</h2>
+    <p>Anchor runs in your phone's browser, on Android and iPhone, with nothing to install. Ask between classes; the sources come with every answer.</p>
+    <a class="more" href="/app">Open Anchor on your phone <span aria-hidden="true">→</span></a>
+  </div>
+  <div class="handset"><div class="media" data-video="/static/demos/phone.mp4" data-label="Anchor answering on a phone"></div></div>
+</div></section>
+
+<section class="why"><div class="inner">
+  <h2>Why Anchor?</h2>
+  <p class="lead">The same AI model answers in both columns. Anchor adds what it reads first, and what it checks after.</p>
+  <div class="compare-wrap"><table class="compare">
+    <thead><tr><th></th><th>The AI model on its own</th><th>Anchor</th></tr></thead>
+    <tbody>
+      <tr><th>Where answers come from</th><td data-label="On its own">Whatever it picked up in training</td><td class="us" data-label="Anchor">Your own course files, quoted word for word</td></tr>
+      <tr><th>Sources</th><td data-label="On its own">None you can check</td><td class="us" data-label="Anchor">Every step, with the page, slide, line or cell</td></tr>
+      <tr><th>When your files don't say</th><td data-label="On its own">Can guess</td><td class="us" data-label="Anchor">Says “Not found in your materials”</td></tr>
+      <tr><th>Checking</th><td data-label="On its own">None</td><td class="us" data-label="Anchor">Each step checked against your files; marked Unsure if a check fails</td></tr>
+      <tr><th>Pictures and spreadsheets</th><td data-label="On its own">Can't see your files</td><td class="us" data-label="Anchor">Reads graphs and flowcharts; numbers from the exact cell</td></tr>
+      <tr><th>On 21 practice questions</th><td data-label="On its own">6 right · 1 made-up claim</td><td class="us" data-label="Anchor"><b>21 right · 0 made-up claims</b></td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<section class="proof" id="proof"><div class="inner">
+  <div class="kicker">Fewer hallucinations · measured, not promised</div>
+  <h2 style="margin-top:12px">Fewer made-up answers.</h2>
+  <p class="lead">A made-up answer, or hallucination, is any claim your files don't back. We asked the same 21 practice questions about a sample course, answered by the same AI model, with and without Anchor around it.</p>
+  <div class="stats">
+    <div class="stat"><b>0</b><span>made-up claims with Anchor, against 1 for the model on its own (and 0 again on 13 more questions written later)</span></div>
+    <div class="stat"><b>21 of 21</b><span>answered correctly with Anchor, against 6 of 21 for the model on its own</span></div>
+    <div class="stat"><b>7 of 7</b><span>questions the course files can't answer, declined instead of guessed</span></div>
+  </div>
+  <p class="fine">Practice questions on a sample course Library, one run each, 18 October 2026. The model on its own mostly said “I don't know”, which is why its made-up count is low; Anchor answered the questions instead, without adding any. The final test on held-back questions has not been run yet.</p>
+</div></section>
+
+<section class="steps-sec"><div class="inner">
+  <h2>Up and running in three steps.</h2>
+  <div class="steps">
+    <div><div class="n">1</div><h3>Sign up</h3><p>Start a free trial. Free for SMU students. Your Library is private to you.</p></div>
+    <div><div class="n">2</div><h3>Drop in your course files</h3><p>PDFs, Word documents, slides, notes, pictures and spreadsheets, straight into the chat.</p></div>
+    <div><div class="n">3</div><h3>Ask</h3><p>Plain questions, follow-ups included. Every answer shows where it came from.</p></div>
+  </div>
+</div></section>
+
+<section class="cta"><div class="inner">
+  <h2>Stop searching your notes. Ask them.</h2>
+  <a class="btn" href="/app">Start free trial</a>
+</div></section>
+
+<!--#footer-->
+<script>
+const $ = id => document.getElementById(id);
+$("tsend").innerHTML = SEND_SVG;
+
+// The try-it box: saved answers from real runs (samples.json), shown instantly at no cost.
+let samples = [];
+const norm = s => s.trim().toLowerCase().replace(/\s+/g, " ");
+let typing = null;
+function fill(q, animate) {
+  clearInterval(typing);
+  document.querySelectorAll("#chips .chip").forEach(c => c.setAttribute("aria-pressed", String(c.dataset.q === q)));
+  if (!animate || matchMedia("(prefers-reduced-motion: reduce)").matches) { $("tq").value = q; return; }
+  let i = 0; $("tq").value = "";
+  typing = setInterval(() => { $("tq").value = q.slice(0, ++i); if (i >= q.length) { clearInterval(typing); $("tsend").classList.remove("nudge"); void $("tsend").offsetWidth; $("tsend").classList.add("nudge"); } }, 14);
+}
+fetch("/static/samples.json").then(r => r.json()).then(list => {
+  samples = list;
+  $("chips").innerHTML = list.map(s => `<button type="button" class="chip" data-q="${esc(s.question)}" title="${esc(s.question)}">${esc(s.label)}</button>`).join("");
+  fill(list[0].question, false);
+  $("tsend").classList.add("nudge");
+});
+$("chips").onclick = e => { const c = e.target.closest(".chip"); if (c) { fill(c.dataset.q, true); $("reply").innerHTML = ""; } };
+$("try").onsubmit = e => {
+  e.preventDefault();
+  const q = $("tq").value.trim();
+  if (!q) return;
+  const s = samples.find(x => norm(x.question) === norm(q));
+  const own = `/app?q=${encodeURIComponent(q)}`;
+  $("reply").innerHTML = s
+    ? `<div class="fade">${answerHTML(s.question, s, {citeHref: null, pictureSrc: p => p.image})}
+        <div class="saved"><span>Saved answer from a real run on a sample course Library.</span>
+        <a class="btn small" href="/app">Ask about your own files</a></div></div>`
+    : `<div class="fade"><div class="ans-q">${esc(q)}</div><div class="ans-card"><div>
+        <div class="ans-final">This preview only has a few saved answers.</div>
+        <p style="color:var(--mute-2);margin:8px 0 14px">Sign in to ask your own question about your own files.</p>
+        <a class="btn small" href="${own}">Ask it in Anchor</a></div></div></div>`;
+};
+$("tq").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("try").requestSubmit(); } });
+</script>
+</body></html>
