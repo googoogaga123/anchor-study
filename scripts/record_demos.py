@@ -20,6 +20,12 @@ address, an @handle or a phone number; one found stops the recording and no
 clip is saved. Excerpts an answer doesn't cite stay closed in the Sources
 panel, so their text is never on screen.
 
+The scan clip (phone size) signs in as a fresh Member, scans IS114 pp. 1, 3
+and 4 - pages checked to hold no personal details - and asks about them. Its
+"photos" are stand-ins for camera shots, which a browser recording cannot
+take: each page rendered and placed, tilted, on a dark desk. They go through
+"Choose photos", and straightening, reading and answering are the app's own.
+
 The upload clip draws a file window and a pointer over the page - a stand-in
 for the desktop, which a browser recording cannot show. The file dropped is
 the real week12hints.txt, through a real drop event; uploading, reading and
@@ -44,15 +50,20 @@ sys.path.insert(0, str(ROOT / "web"))
 import db  # noqa: E402
 
 BASE = os.environ.get("DEMO_BASE", "http://localhost:8000")
-EMAIL, UPLOADER = "demo@example.com", "upload-demo@example.com"
+EMAIL, UPLOADER, SCANNER = "demo@example.com", "upload-demo@example.com", "scan-demo@example.com"
 OUT = ROOT / "web" / "static" / "demos"
 WIDE, PHONE = {"width": 1440, "height": 900}, {"width": 412, "height": 915}
 READ_SECONDS, CHECK_SECONDS, UPLOAD_SECONDS = 2.0, 1.0, 2.0
 UPLOAD_FILE = ROOT / "eval set" / "week12hints.txt"
+SCAN_PDF = ROOT / "eval set" / "IS114 AY26-T1 Course Content, Student Edition.pdf"
+SCAN_PAGES = (1, 3, 4)   # never p. 2 (the sections table: staff names and emails) or p. 9
+STRAIGHTEN_SECONDS = 2.5   # straightening and reading the pages, as shown
+MISREAD = "oIt's"          # a bullet read as a letter on p. 3; fixed on camera when the OCR makes it
 
 # clip -> (who, viewport, Library shown, steps). Steps: ("ask", question); ("source", n) opens the
 # n-th step's Source in the last answer; ("open",) follows the open excerpt's "Open in the file";
-# ("drop",) drags UPLOAD_FILE into the chat; ("pause", seconds).
+# ("drop",) drags UPLOAD_FILE into the chat; ("scan",) scans SCAN_PAGES; ("show", selector) scrolls
+# it into view; ("pause", seconds).
 CLIPS = {
     "hero": (EMAIL, WIDE, False, [
         ("ask", "How many IS114 revision quizzes do I need to complete to get full marks?"), ("pause", 2.5),
@@ -75,7 +86,39 @@ CLIPS = {
         ("source", 1), ("pause", 3.5)]),
     "phone": (EMAIL, PHONE, False, [
         ("ask", "Which week is the IS114 recess week?"), ("pause", 2), ("source", 1), ("pause", 3.5)]),
+    "scan": (SCANNER, PHONE, False, [
+        ("pause", 1.2), ("scan",), ("pause", 1.2),
+        ("ask", "How many IS114 revision quizzes do I need to complete to get full marks?"), ("pause", 1.5),
+        ("show", ".turn:last-child figure"), ("pause", 3), ("source", 1), ("pause", 3)]),
 }
+
+
+def scan_photos(folder):
+    """Stand-in camera photos of SCAN_PAGES (see the module docstring), after checking
+    that the pages' own text holds nothing personal."""
+    import cv2
+    import numpy as np
+    import pypdfium2 as pdfium
+    from PIL import Image
+    pdf, rng, out = pdfium.PdfDocument(str(SCAN_PDF)), np.random.default_rng(3), []
+    for n in SCAN_PAGES:
+        if PRIVATE.search(pdf[n - 1].get_textpage().get_text_range()):
+            sys.exit(f"p. {n} of {SCAN_PDF.name} holds what looks like personal details; not scanning it")
+        page = np.asarray(pdf[n - 1].render(scale=150 / 72).to_pil().convert("RGB"))
+        ph, pw = page.shape[:2]
+        W, H = 3000, 4000
+        canvas = np.empty((H, W, 3), np.uint8)
+        canvas[:] = (62, 47, 36)
+        canvas = np.clip(canvas.astype(int) + rng.integers(-12, 12, canvas.shape), 0, 255).astype(np.uint8)
+        j = rng.integers(-70, 70, 8)
+        corners = np.float32([[420 + j[0], 520 + j[1]], [2580 + j[2], 380 + j[3]], [2700 + j[4], 3560 + j[5]], [300 + j[6], 3420 + j[7]]])
+        M = cv2.getPerspectiveTransform(np.float32([[0, 0], [pw, 0], [pw, ph], [0, ph]]), corners)
+        mask = cv2.warpPerspective(np.full((ph, pw), 255, np.uint8), M, (W, H))
+        canvas[mask > 0] = cv2.warpPerspective(page, M, (W, H))[mask > 0]
+        path = pathlib.Path(folder) / f"IMG_{4100 + n}.jpg"
+        Image.fromarray(cv2.GaussianBlur(canvas, (3, 3), 0)).save(path, "JPEG", quality=88)
+        out.append(str(path))
+    return out
 
 PRIVATE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.[A-Za-z0-9.-]+|(?<![\w/])@[A-Za-z0-9_]{3,}|(?<!\d)[689]\d{3}\s?\d{4}(?!\d)")
 
@@ -219,6 +262,41 @@ def record(browser, name, tmp):
             page.wait_for_timeout(1000)
             page.evaluate("document.getElementById('rec-pointer').remove()")
             guard(page, f"the upload in {name}")
+        elif kind == "scan":
+            page.click("#scan-btn")
+            page.wait_for_selector("#scan[open]")
+            page.wait_for_timeout(1300)
+            with page.expect_file_chooser() as chooser:
+                page.click("#scan-choose")
+            chooser.value.set_files(scan_photos(tmp))
+            chosen = now()
+            page.wait_for_function("() => document.querySelectorAll('#scan-pages .pg').length && !document.querySelector('#scan-pages .spin')",
+                                   timeout=120_000, polling=50)
+            squeeze.append((chosen + 0.6, now(), STRAIGHTEN_SECONDS))
+            page.wait_for_timeout(1800)
+            # Check page 2's text, and fix the misread if the OCR made it.
+            page.click("#scan-pages .pg[data-i='1'] button[data-a='text']")
+            page.wait_for_timeout(1800)
+            at = page.locator("#edit-area").evaluate(f"""a => {{ const i = a.value.indexOf({MISREAD!r});
+                if (i < 0) return -1; a.focus(); a.setSelectionRange(i, i + 2);
+                a.blur(); a.focus(); a.setSelectionRange(i, i + 2); return i; }}""")
+            if at >= 0:
+                page.wait_for_timeout(900)
+                page.keyboard.type("I", delay=150)
+                page.wait_for_timeout(1600)
+            page.click("#edit-done")
+            page.wait_for_timeout(1300)
+            page.locator("#scan .body").evaluate("b => b.scrollTo({top: b.scrollHeight, behavior: 'smooth'})")
+            page.wait_for_timeout(1100)
+            page.click("#scan-save")
+            saved = now()
+            page.wait_for_selector(".up small.ok", timeout=300_000)
+            squeeze.append((saved + 1.0, now() - 0.2, UPLOAD_SECONDS))
+            page.wait_for_timeout(1200)
+            guard(page, f"the scan in {name}")
+        elif kind == "show":
+            page.locator(arg).scroll_into_view_if_needed()
+            page.wait_for_timeout(400)
         elif kind == "pause":
             page.wait_for_timeout(int(arg * 1000))
     end = now()
@@ -261,7 +339,7 @@ def main():
             print(f"{name}: {end - start:.0f} s recorded; {waited:.0f} s of waiting shown as {shown:.1f} s "
                   f"-> {dest.relative_to(ROOT)}, {dest.stat().st_size // 1024} KB", flush=True)
         browser.close()
-    for who in (EMAIL, UPLOADER):
+    for who in (EMAIL, UPLOADER, SCANNER):
         reset(who)
 
 

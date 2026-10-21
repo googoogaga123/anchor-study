@@ -25,7 +25,7 @@ import pathlib
 import re
 import sys
 
-from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -36,6 +36,7 @@ import db  # noqa: E402
 import ingest  # noqa: E402
 import pages as public_pages  # noqa: E402
 import pipeline  # noqa: E402
+import scan  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 STATIC = pathlib.Path(__file__).resolve().parent / "static"
@@ -184,8 +185,8 @@ def callback(request: Request, code: str = "", state: str = ""):
 @app.post("/api/logout")
 def logout(request: Request):
     """Sign out here, and at the login service too (else its page signs you straight back in)."""
-    nxt = auth.logout_url(request.cookies.get(auth.SID_COOKIE), auth.public_origin(request) + "/") or "/"
-    resp = JSONResponse({"ok": True, "next": nxt})
+    auth.end_session(request.cookies.get(auth.SID_COOKIE))
+    resp = JSONResponse({"ok": True, "next": "/"})
     resp.delete_cookie(auth.COOKIE)
     resp.delete_cookie(auth.SID_COOKIE)
     return resp
@@ -234,33 +235,59 @@ def _question(body, user):
     return q, turns
 
 
+def _claim_question(user):
+    """Count the question before any model call, in one step: closing the browser
+    mid-answer, or asking from two tabs at once, can't get a Member past the limit."""
+    if auth.is_admin(user):
+        db.run("UPDATE users SET questions_used = questions_used + 1 WHERE id = %s", (user["id"],))
+    elif not db.one("UPDATE users SET questions_used = questions_used + 1 WHERE id = %s AND questions_used < %s "
+                    "RETURNING id", (user["id"], db.MEMBER_QUESTIONS)):
+        raise HTTPException(403, f"You have used your {db.MEMBER_QUESTIONS} questions. This is a demo to try; "
+                                 "an Admin can reset your questions.")
+
+
+def _refund_question(user):
+    """Answering failed: the question doesn't count."""
+    db.run("UPDATE users SET questions_used = GREATEST(questions_used - 1, 0) WHERE id = %s", (user["id"],))
+
+
 def _save(user, q, answer, spent):
+    """The answer into the chat history and its cost into the Demo budget's ledger."""
     tin, tout, usd = spent
     msg = db.one("INSERT INTO messages (user_id, question, answer) VALUES (%s, %s, %s::jsonb) RETURNING id",
                  (user["id"], q, json.dumps(answer)))
     db.run("INSERT INTO spend (user_id, kind, tokens_in, tokens_out, usd) VALUES (%s, 'answer', %s, %s, %s)",
            (user["id"], tin, tout, usd))
-    db.run("UPDATE users SET questions_used = questions_used + 1 WHERE id = %s", (user["id"],))
     return msg["id"]
 
 
 @app.post("/api/ask")
 def ask(body: Ask, user=Depends(auth.current_user)):
     q, turns = _question(body, user)
-    answer, spent = pipeline.answer(user["library_id"], q, turns)
+    _claim_question(user)
+    try:
+        answer, spent = pipeline.answer(user["library_id"], q, turns)
+    except Exception:
+        _refund_question(user)
+        raise
     return {"id": _save(user, q, answer, spent), "answer": answer}
 
 
 @app.post("/api/ask/stream")
 def ask_stream(body: Ask, user=Depends(auth.current_user)):
     """The same answer as /api/ask, sent while it is made: one JSON event per line
-    (pipeline.stream). The question counts, and is saved, once it is done."""
+    (pipeline.stream). The question counts when it is asked; the answer and its cost
+    are recorded by the worker when done, even if the browser has gone by then."""
     q, turns = _question(body, user)
+    _claim_question(user)
+    work = pipeline.stream(user["library_id"], q, turns,
+                           on_done=lambda answer, spent: {"id": _save(user, q, answer, spent)},
+                           on_error=lambda: _refund_question(user))
 
     def events():
-        for event in pipeline.stream(user["library_id"], q, turns):
+        for event in work:
             if event["type"] == "done":
-                event = {"type": "done", "id": _save(user, q, event["answer"], event["cost"]), "answer": event["answer"]}
+                event = {"type": "done", "id": event["id"], "answer": event["answer"]}
             yield json.dumps(event) + "\n"
 
     return StreamingResponse(events(), media_type="application/x-ndjson",
@@ -377,17 +404,11 @@ def reset(body: Target, user=Depends(_admin)):
     return {"ok": True}
 
 
-@app.post("/api/upload")
-def upload(file: UploadFile = File(...), user=Depends(auth.current_user)):
-    """One file into the user's own Library: checked against the limits, stored,
+def _add_file(user, name, fmt, data, scanned=False, beside=None):
+    """One file into the user's own Library, once every limit allows it: stored,
     then read and indexed in the background (ingest.py); /api/files shows progress."""
     if user["library_id"] == "eval":
         raise HTTPException(403, "The sample Library is read-only: it is the eval's answer key.")
-    name = pathlib.Path(file.filename or "").name.strip()
-    fmt = ingest.fmt_of(name)
-    if not name or not fmt:
-        raise HTTPException(400, "Anchor reads PDF, Word (.docx), PowerPoint (.pptx), text (.txt, .md), "
-                                 "pictures (.png, .jpg, .webp) and spreadsheets (.xlsx).")
     admin = auth.is_admin(user)
     if not admin and user["files_used"] >= db.MEMBER_FILES:
         raise HTTPException(403, f"You have added your {db.MEMBER_FILES} file. This is a demo to try; "
@@ -396,16 +417,17 @@ def upload(file: UploadFile = File(...), user=Depends(auth.current_user)):
         raise HTTPException(503, "The demo has used up its budget for now - thank you for trying it!")
     if db.one("SELECT 1 AS x FROM files WHERE library_id = %s AND name = %s", (user["library_id"], name)):
         raise HTTPException(409, f"{name} is already in your Library. Delete it first to add it again.")
-    data = file.file.read(ingest.MAX_BYTES + 1)
     if len(data) > ingest.MAX_BYTES:
         raise HTTPException(413, f"Files can be up to {ingest.MAX_BYTES // 2**20} MB.")
     lib = ingest.lib_dir(user["library_id"])
-    row = db.one("INSERT INTO files (user_id, library_id, name, format, pages, path, status, progress) "
-                 "VALUES (%s, %s, %s, %s, 0, '', 'processing', 'Uploading') RETURNING id",
-                 (user["id"], user["library_id"], name, fmt))
+    row = db.one("INSERT INTO files (user_id, library_id, name, format, pages, path, status, progress, scanned) "
+                 "VALUES (%s, %s, %s, %s, 0, '', 'processing', 'Uploading', %s) RETURNING id",
+                 (user["id"], user["library_id"], name, fmt, scanned))
     dest = lib / "files" / str(row["id"]) / name
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_bytes(data)
+    for extra, content in (beside or {}).items():  # e.g. a scan's checked text, read by ingest.py
+        (dest.parent / extra).write_bytes(content)
     try:
         pages = ingest.count_pages(dest, fmt)
     except Exception:
@@ -422,6 +444,118 @@ def upload(file: UploadFile = File(...), user=Depends(auth.current_user)):
     db.run("UPDATE users SET files_used = files_used + 1, pages_used = pages_used + %s WHERE id = %s", (pages, user["id"]))
     ingest.start(row["id"])
     return db.one("SELECT id, name, label, format, pages, status, progress, error, created FROM files WHERE id = %s", (row["id"],))
+
+
+@app.post("/api/upload")
+def upload(file: UploadFile = File(...), user=Depends(auth.current_user)):
+    name = pathlib.Path(file.filename or "").name.strip()
+    fmt = ingest.fmt_of(name)
+    if not name or not fmt:
+        raise HTTPException(400, "Anchor reads PDF, Word (.docx), PowerPoint (.pptx), text (.txt, .md), "
+                                 "pictures (.png, .jpg, .webp) and spreadsheets (.xlsx).")
+    return _add_file(user, name, fmt, file.file.read(ingest.MAX_BYTES + 1))
+
+
+# ---- Scanning printed pages (scan.py) ---------------------------------------
+
+SCAN_PHOTO_BYTES = 10 * 2**20
+SCAN_MAX_PAGES = 50
+# Page checks and reads per account per hour: each takes 1-6 s of this server's CPU, and a
+# read holds Docling's lock, so an unlimited loop could stall every upload and scan. A
+# 50-page scan uses 100 (a check and a read per page), with room for retakes.
+SCAN_CALLS_PER_HOUR = 150
+_scan_calls, _scan_calls_lock = {}, __import__("threading").Lock()
+
+
+def _scan_allowed(user):
+    """Refuse scan work the account couldn't save anyway, or more than SCAN_CALLS_PER_HOUR."""
+    import time
+    from collections import deque
+    if user["library_id"] == "eval":
+        raise HTTPException(403, "The sample Library is read-only: it is the eval's answer key.")
+    if not auth.is_admin(user) and user["files_used"] >= db.MEMBER_FILES:
+        raise HTTPException(403, f"You have added your {db.MEMBER_FILES} file. This is a demo to try; "
+                                 "an Admin can reset your upload.")
+    now = time.monotonic()
+    with _scan_calls_lock:
+        calls = _scan_calls.setdefault(user["id"], deque())
+        while calls and now - calls[0] > 3600:
+            calls.popleft()
+        if len(calls) >= SCAN_CALLS_PER_HOUR:
+            raise HTTPException(429, "You've checked a lot of pages in the last hour. Please wait a little, then try again.")
+        calls.append(now)
+
+
+def _photo(file):
+    data = file.file.read(SCAN_PHOTO_BYTES + 1)
+    if len(data) > SCAN_PHOTO_BYTES:
+        raise HTTPException(413, "A photo can be up to 10 MB.")
+    return data
+
+
+@app.post("/api/scan/page")
+def scan_page(photo: UploadFile = File(...), user=Depends(auth.current_user)):
+    """One photo of a page, straightened and checked. Nothing is stored: the
+    pages stay in the browser until the student saves the scan."""
+    _scan_allowed(user)
+    import base64
+    try:
+        page, cropped = scan.crop_page(_photo(photo))
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(400, "That photo could not be opened. Please take it again.")
+    return {"page": base64.b64encode(page).decode(), "cropped": cropped, "check": scan.readability(page)}
+
+
+SCAN_TEXT_CHARS = 20_000  # per page
+
+
+@app.post("/api/scan/read")
+def scan_read(page: UploadFile = File(...), user=Depends(auth.current_user)):
+    """One straightened page's text, read now so the student can check and correct it
+    before saving. Nothing is stored."""
+    _scan_allowed(user)
+    try:
+        text = ingest.read_scan_page(_photo(page))
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(400, "This page could not be read. Please take it again.")
+    return {"text": text[:SCAN_TEXT_CHARS], "words": len(text.split())}
+
+
+@app.post("/api/scan")
+def scan_save(pages: list[UploadFile] = File(...), name: str = Form(""), texts: str = Form(""),
+              user=Depends(auth.current_user)):
+    """The straightened pages, in order, saved as one PDF in the Library. `texts`, when
+    given, is each page's checked text ([{"text", "edited"}], from /api/scan/read and the
+    student's corrections): it is indexed as it stands. Without it the pages are read by OCR."""
+    if not pages:
+        raise HTTPException(400, "Take a photo of at least one page.")
+    if len(pages) > SCAN_MAX_PAGES:
+        raise HTTPException(400, f"A scan can have up to {SCAN_MAX_PAGES} pages.")
+    checked = None
+    if texts:
+        try:
+            checked = [{"text": str(t["text"])[:SCAN_TEXT_CHARS], "edited": bool(t.get("edited"))} for t in json.loads(texts)]
+        except (ValueError, TypeError, KeyError):
+            raise HTTPException(400, "The pages' text could not be read. Please try saving again.")
+        if len(checked) != len(pages):
+            raise HTTPException(400, "Each page needs its text. Please try saving again.")
+        if not any(t["text"].strip() for t in checked):
+            raise HTTPException(400, "None of these pages has any text. Retake them, or type the text in.")
+    import datetime
+    title = re.sub(r"[\\/:*?\"<>|\x00-\x1f]+", " ", name).strip()[:80].removesuffix(".pdf").strip()
+    title = title or "Scan " + datetime.datetime.now().strftime("%-d %b, %H.%M")
+    try:
+        pdf = scan.assemble_pdf([_photo(p) for p in pages])
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(400, "The pages could not be put together. Please take them again.")
+    beside = {"pages.json": json.dumps(checked).encode()} if checked else None
+    return _add_file(user, f"{title}.pdf", "PDF", pdf, scanned=True, beside=beside)
 
 
 @app.delete("/api/files/{file_id}")

@@ -52,6 +52,10 @@ section.phone .inner { display: grid; grid-template-columns: minmax(0, 1fr) auto
 section.phone h2 { font-size: clamp(36px, 5vw, 58px); line-height: 1.02; letter-spacing: -.025em; margin: 10px 0 18px; }
 section.phone .kicker { text-transform: none; letter-spacing: 0; font-size: clamp(20px, 2.4vw, 26px); font-weight: 400; font-family: var(--font-sans); }
 section.phone p { max-width: 560px; font-size: 17px; }
+section.phone.flip .inner { grid-template-columns: auto minmax(0, 1fr); }
+section.phone + section.phone.flip { padding-top: 24px; }  /* one dark band: the phone, then scanning on it */
+figure.clip { margin: 0; display: grid; justify-items: center; gap: 14px; }
+figure.clip figcaption { max-width: min(330px, 78vw); text-align: center; font-size: 13px; line-height: 1.5; color: var(--on-dark-mute); }
 .handset { width: min(330px, 78vw); aspect-ratio: 412 / 915; border-radius: 46px; padding: 11px; background: #1c1c1f;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, .14), 0 40px 80px -20px rgba(0, 0, 0, .7); position: relative; margin: 0 auto; }
 .handset::before { content: ""; position: absolute; top: 19px; left: 50%; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: #0b0b0d; z-index: 2;
@@ -124,7 +128,8 @@ footer a { color: var(--on-dark-mute); text-decoration: none; } footer a:hover {
 footer .small { margin-top: 36px; padding-top: 22px; border-top: 1px solid rgba(255, 255, 255, .1); font-size: 12.5px; }
 
 @media (max-width: 860px) {
-  section.feature .inner, section.accord .grid, section.phone .inner { grid-template-columns: minmax(0, 1fr); gap: 34px; }
+  section.feature .inner, section.accord .grid, section.phone .inner, section.phone.flip .inner { grid-template-columns: minmax(0, 1fr); gap: 34px; }
+  section.phone.flip figure.clip { order: 2; }
   section.feature.flip .text { order: 0; }
   section.feature, section.proof, section.steps-sec, section.accord, section.why, section.phone, section.block { padding: 72px 0; }
   .stats, .steps, .steps.four, .cards, .cards.two { grid-template-columns: minmax(0, 1fr); }

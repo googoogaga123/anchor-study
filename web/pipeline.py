@@ -245,7 +245,7 @@ def answer(library_id, question, history=(), emit=None):
     }, (tin, tout, usd)
 
 
-def stream(library_id, question, history=()):
+def stream(library_id, question, history=(), on_done=None, on_error=None):
     """answer(), as events while it happens, for the website's streamed answers:
 
       {"type": "stage", "stage": "reading"}    rewriting the question, routing, searching
@@ -255,16 +255,23 @@ def stream(library_id, question, history=()):
       {"type": "done", "answer": {...}, "cost": (tokens in, tokens out, usd)}
       {"type": "error", "message": "..."}
 
-    A draft is shown before it is checked; the page says so until "done"."""
+    A draft is shown before it is checked; the page says so until "done".
+
+    on_done(answer, cost) -> extra fields for the "done" event, and on_error(), run in
+    the worker thread: it finishes even when the browser has gone, so whatever they
+    record (the chat history, the spend) is recorded either way."""
     events = queue.Queue()
 
     def work():
         try:
             final, spent = answer(library_id, question, history, emit=events.put)
-            events.put({"type": "done", "answer": final, "cost": spent})
+            extra = on_done(final, spent) if on_done else None
+            events.put({"type": "done", "answer": final, "cost": spent, **(extra or {})})
         except Exception as e:  # the page shows a plain message; the server log keeps the detail
             import traceback
             traceback.print_exc()
+            if on_error:
+                on_error()
             events.put({"type": "error", "message": f"Something went wrong while answering ({type(e).__name__})."})
         finally:
             events.put(None)

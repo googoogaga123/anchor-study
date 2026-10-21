@@ -42,3 +42,7 @@ site/
 audit.md
 HANDOFF.md
 makendra*.md
+
+# Hackathon submission media (LinkedIn/Devpost), not part of the code
+submission/
+.serve_public.log

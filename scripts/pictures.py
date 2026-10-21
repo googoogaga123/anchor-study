@@ -16,8 +16,13 @@ its quote comes from inside that picture's Diagram description -
     boundary still counts: text before the first "[End of figure" with no
     opening marker, or after an opening marker with no end, is figure text.
 
+A scanned page (web/ingest.py, kind "scan") is different: all of its text is
+a machine reading (OCR), so a step rests on it whenever its quote is in that
+page's OCR text, and the whole page is shown.
+
 Each picture comes back as {file, loc, image, kind, note}; `image` is the
-picture to show (the image file, or the crop in parsed/figures/).
+picture to show (the image file, the crop in parsed/figures/, or the page of
+a scan).
 """
 import pathlib
 import re
@@ -81,7 +86,16 @@ def figure_text(chunk_text):
     return spans
 
 
+def _pages(loc):
+    """The page numbers a chunk's loc covers: "p. 3" -> {3}, "pp. 2-4" -> {2, 3, 4}."""
+    m = re.match(r"pp?\. (\d+)(?:-(\d+))?", loc or "")
+    return set(range(int(m.group(1)), int(m.group(2) or m.group(1)) + 1)) if m else set()
+
+
 def _note(p):
+    if p["kind"] == "scan":
+        fixed = ", corrected by you" if p.get("edited") else ""
+        return f"Read by OCR from {p['loc']} of {p['file']}{fixed} - check the page."
     where = f"on {p['loc']} of {p['file']}" if p["loc"] else p["file"]
     return f"Based on a computer reading of the {p['kind']} {where} - check the picture."
 
@@ -99,7 +113,10 @@ def relied_on(result, library_pictures=None):
                       if p["file"] == ev["file"] and q in p["text"]]
         if not candidates:
             continue
-        if any(p["loc"] == "" for p in candidates):  # an image file: the chunk is its description
+        scans = [p for p in candidates if p["kind"] == "scan"]
+        if scans:  # a scanned page: the quote is its OCR text; prefer a page inside the chunk's own pages
+            hit = next((p for p in scans if _pages(p["loc"]) & _pages(ev.get("loc"))), scans[0])
+        elif any(p["loc"] == "" for p in candidates):  # an image file: the chunk is its description
             hit = candidates[0]
         else:
             spans = [(page, norm(t)) for page, t in figure_text(ev["text"])]

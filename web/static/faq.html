@@ -33,9 +33,15 @@
   <details open><summary>What is Anchor?</summary><div class="a">
     <p>A study assistant for your own course files. You add your notes, slides, readings and spreadsheets; you ask questions in plain words; Anchor answers from your files only, quoting the exact words and showing where they came from.</p></div></details>
   <details><summary>What files can I add?</summary><div class="a">
-    <p>PDFs, PowerPoint slides (.pptx), Word documents (.docx), notes (.txt, .md), pictures (.png, .jpg, .webp) and spreadsheets (.xlsx), up to 25 MB each. Drag them into the chat, or use the + button. Pictures inside Word and PowerPoint files, and scanned PDFs with no text layer, aren't read yet. <a href="/uploads">More on uploads</a>.</p></div></details>
+    <p>PDFs, PowerPoint slides (.pptx), Word documents (.docx), notes (.txt, .md), pictures (.png, .jpg, .webp) and spreadsheets (.xlsx), up to 25 MB each. Drag them into the chat, use the + button, or scan printed pages with the camera button. Pictures inside Word and PowerPoint files aren't read yet. <a href="/uploads">More on uploads</a>.</p></div></details>
   <details><summary>Does it work on my phone?</summary><div class="a">
     <p>Yes. Anchor runs in your phone's browser, on Android and iPhone. There's nothing to install.</p></div></details>
+  <details><summary>Can I scan paper handouts?</summary><div class="a">
+    <p>Yes, printed pages. Tap the camera button in the chat and take a photo of each page; Anchor crops and straightens them, flags any that look blurry or empty, and reads their text by OCR (text recognition). Tap "Check text" under a page to see what was read beside the photo and fix any word it got wrong, then save: the pages become one PDF in your Library. A scanned PDF from your phone's scanner app works too (it is read when added, without the check). Any answer that rests on a scanned page shows that page beside it, and says so if you corrected it. Handwriting isn't read reliably yet. A scan counts as one file. <a href="/uploads#scan">More on scanning</a>.</p></div></details>
+  <details><summary>How do I get a good scan?</summary><div class="a">
+    <p>Lay the page flat on a darker surface, so its edges stand out, and fill the frame with it. Use good light, keep your phone's shadow off the page, and hold still. One photo per page; a scan can have up to 50 pages. If a page is flagged as blurry or empty, tap Retake. If the page can't be found in the photo, it is kept as taken, which still works for a straight, close shot. Before saving, tap "Check text" on each page: bullet points and symbols are the most common misreads.</p></div></details>
+  <details><summary>What happens to my photos?</summary><div class="a">
+    <p>Nothing is kept until you tap Save, and then only the straightened pages, which are re-saved without the photos' location data. Anchor's own server straightens the photos and reads their text, and the text you check and correct is what is saved. Once saved, the pages are one PDF in your private Library, and deleting it removes them everywhere. As with any file, the passages an answer uses are sent to OpenAI to write the answer, and any graph or diagram on a page is described by OpenAI's model.</p></div></details>
 
   <h2>Answers you can trust</h2>
   <details><summary>Where do the answers come from?</summary><div class="a">
@@ -54,7 +60,7 @@
   <details><summary>How does Anchor read pictures and graphs?</summary><div class="a">
     <p>An AI model writes a description of each picture: what it is, all its text, a graph's axes and lines, and its arrows (read three times, keeping what the readings agree on). That description is what answers quote. Because a computer's reading can be wrong, any answer that rests on a picture shows the picture beside it, so you can check.</p></div></details>
   <details><summary>Can I still get a wrong answer?</summary><div class="a">
-    <p>Yes, less often, and usually visibly. The checks test each step against your files, not arithmetic the model does itself (adding up dates, for example), and a picture's description can misread it. Use the Source button on anything that matters.</p></div></details>
+    <p>Yes, less often, and usually visibly. The checks test each step against your files, not arithmetic the model does itself (adding up dates, for example), a picture's description can misread it, and so can the text recognition on a scanned page. Use the Source button on anything that matters.</p></div></details>
 
   <h2>Your files</h2>
   <details><summary>Who can see my files?</summary><div class="a">

@@ -51,6 +51,13 @@ unsupported claims.
   with a note to check it.
 - **Numbers from spreadsheets:** questions about figures are answered from the
   exact cell, which the answer names.
+- **Scan printed pages with a phone:** photos are cropped and straightened on
+  the server (OpenCV), blurry or empty ones are flagged, and each page is
+  read by OCR (Docling with RapidOCR, both local and free) while the student
+  reviews it. "Check text" shows what was read beside the photo, so any
+  misread word can be fixed before saving; the checked text is what gets
+  indexed. Scanned PDFs from a phone's own scanner app are read by the same
+  OCR when added.
 - **Follow-up questions** ("and how much is each one worth?") understood from
   the conversation.
 - **Private Libraries:** drag files into the chat (PDF, Word, text, pictures,
@@ -94,9 +101,11 @@ didn't recognise. Counts are from one run each (18 Oct 2026).
   checking and picture descriptions; `text-embedding-3-small` for embeddings);
   Google Gemini 3.5 Flash Lite (two screenshot descriptions in the test
   Library, after every OpenAI model misread an arrow); BAAI
-  `bge-reranker-v2-m3` (runs locally).
+  `bge-reranker-v2-m3` (runs locally); PP-OCRv6 through RapidOCR (reads
+  scanned pages, locally).
 - **Libraries:** Docling, PostgreSQL with pgvector, DuckDB, FastAPI and
-  uvicorn, pypdfium2, openpyxl, sentence-transformers, tiktoken.
+  uvicorn, pypdfium2, openpyxl, sentence-transformers, tiktoken, OpenCV
+  (straightening scanned pages), Pillow.
 - **Services:** WorkOS AuthKit (sign-in), Vercel (front page), Tailscale
   Funnel (serving the app), Fontshare and Google Fonts.
 - **Demo clips:** Playwright and ffmpeg, recording the live app.
@@ -148,6 +157,12 @@ never put that version online.
   answer, Anchor declined all 7.
 - **Pictures are shown, not just described.** A picture description can be
   wrong, so any answer resting on one shows the picture with a note to check it.
+- **Scanned pages are shown too.** An OCR misread would match its own quote,
+  so the checker can't catch it; any answer resting on a scanned page shows
+  that page ("Read by OCR from p. 3 ... check the page"), and adds
+  "corrected by you" when the student edited that page's text. A file that
+  yields no text fails with a plain message instead of sitting empty in the
+  Library.
 - **Spreadsheet queries are locked down:** a read-only connection, one SELECT
   only, anything else refused.
 - **Privacy:** each Library is private; every search is filtered by its owner;
@@ -163,6 +178,16 @@ never put that version online.
 - The checker was compared with separate labels on 30 sampled answers: it agreed on 25,
   missed 2 bad answers (the limit set in advance was 2) and wrongly flagged 3.
 - 9 held-back test questions are kept unopened for one final run.
+- **Scanning (20 Oct 2026):**
+  - **OCR on clean pages:** the IS114 handout's 10 pages, rendered as images,
+    gave back 1,921 of the original's 1,989 words, with both tables' rows and
+    the page numbers, at 8.5 s a page.
+  - **From phone-like photos:** 10 synthetic photos of the same pages (tilted
+    on a desk) were all cropped. The 7 practice questions answered from that
+    PDF came out 6 of 7 correct from the scan and 7 of 7 from the original.
+  - **The one miss** was the deliberately ambiguous quiz question (A10). It
+    was read from the same words in both, so it is run-to-run variation, not
+    the OCR.
 
 **Known limits**
 
@@ -178,3 +203,11 @@ never put that version online.
   reranker runs on a laptop processor.
 - **Small test set, one run each:** results can move by a question or two
   between runs.
+- **Scans: printed pages only, tested on synthetic photos.** Handwriting,
+  maths and real phone photos (glare, curled pages, cluttered backgrounds) are
+  not measured yet. Auto-crop needs the page to stand out from its background;
+  otherwise the photo is kept as taken. Reading takes about 6 s a page.
+- **A corrected page is trusted as typed.** Answers quote the student's
+  corrected text, and the checker checks quotes against it, not against the
+  photo, so a wrong correction would pass. The page is still shown beside
+  the answer, marked "corrected by you".

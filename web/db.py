@@ -50,6 +50,8 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS is_smu boolean NOT NULL DEFAULT false
 -- Uploads (ingest.py): what processing is doing now, and the readable copy citations open.
 ALTER TABLE files ADD COLUMN IF NOT EXISTS progress text;
 ALTER TABLE files ADD COLUMN IF NOT EXISTS parsed text;
+-- A scan: photos of printed pages (scan.py), or any PDF with no text layer; read by OCR.
+ALTER TABLE files ADD COLUMN IF NOT EXISTS scanned boolean NOT NULL DEFAULT false;
 CREATE TABLE IF NOT EXISTS messages (
     id       serial PRIMARY KEY,
     user_id  int NOT NULL REFERENCES users(id),

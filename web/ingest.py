@@ -24,8 +24,19 @@ Files live under libraries/<library id>/ (gitignored):
   files/<file id>/<name>      the upload itself
   parsed/<file id>.*          its text, as citations show it
   figures/<file id>_p<page>_<n>.png/.md   pictures cropped from a PDF
+  scans/<file id>_p<page>.jpg   each page of a scan, shown beside answers that rest on it
   sheets.duckdb, sheets/<file id>/        spreadsheets
   pictures.json               every described picture (pipeline.Library.pictures)
+
+Scans: photos of printed pages put together as one PDF (scan.py), or any
+PDF with no text layer (a phone's own scanner app makes those). Docling's OCR
+reads them (measured 20 Oct: 1,921 of 1,989 words back on the IS114 PDF as
+images). An OCR misread becomes the "source", and the checker cannot see it
+(the quote matches the misread text), so each scanned page is kept as a
+picture and shown beside any answer that rests on it (pictures.py).
+The student can check and correct each page's text before saving
+(read_scan_page, then pages.json beside the PDF); the checked text is then
+what is indexed, and a corrected page says so beside answers.
 
 Pages, for the limits (Member: 50 per file; Admin: 200 in all): a PDF's
 pages, a slide deck's slides, a spreadsheet's sheets, one per picture, and for
@@ -33,6 +44,7 @@ Word and text files one per 500 words (a typical printed page).
 
 The eval Library is never changed here: it is the eval's ground truth.
 """
+import io
 import json
 import math
 import pathlib
@@ -63,11 +75,19 @@ FORMATS = {".pdf": "PDF", ".docx": "Word", ".pptx": "Slides", ".txt": "Text", ".
            ".png": "Image", ".jpg": "Image", ".jpeg": "Image", ".webp": "Image", ".xlsx": "Spreadsheet"}
 MAX_BYTES = 25 * 1024 * 1024
 MAX_PICTURES = 20
+TEXT_LAYER_MIN = 20     # characters per page; fewer means a scan, read by OCR
+PAGE_PICTURE = 0.85     # on a scan, a "picture" this much of the page is the page itself
+SCAN_SIDE = 1600        # pixels on the long side of a scanned page as shown beside an answer
+
+
+class NoText(Exception):
+    """Nothing searchable came out of a file; the message is shown to the student."""
 WORDS_PER_PAGE = 500
 EMBED_PRICE = 0.02  # USD per million tokens, text-embedding-3-small (OpenAI pricing page)
 
 _one_at_a_time = ThreadPoolExecutor(1)  # Docling is heavy: one file is read at a time
 _converter, _converter_lock = None, threading.Lock()
+_read_lock = threading.Lock()  # Docling's converter reads one document at a time
 
 
 def fmt_of(name):
@@ -78,6 +98,32 @@ def lib_dir(library_id):
     if library_id == "eval" or not re.fullmatch(r"[A-Za-z0-9_-]+", library_id):
         raise ValueError("not an uploadable Library")
     return LIBS / library_id
+
+
+def is_scanned(path):
+    """A PDF with (almost) no text layer: its pages are pictures of text."""
+    import pypdfium2 as pdfium
+    pdf = pdfium.PdfDocument(str(path))
+    chars = sum(len(page.get_textpage().get_text_range().strip()) for page in pdf)
+    return chars < TEXT_LAYER_MIN * len(pdf)
+
+
+def scan_pages(src, file_id, lib, name, body, edited=()):
+    """Each page of a scan as a picture (pictures.json entry) holding its OCR text,
+    so pictures.relied_on can show the page an answer's quote came from."""
+    import pypdfium2 as pdfium
+    texts = dict(re.findall(r"^## page (\d+)\n(.*?)(?=^## page \d+\n|\Z)", body.read_text(encoding="utf-8"), re.S | re.M))
+    out = lib / "scans"
+    out.mkdir(exist_ok=True)
+    entries = []
+    for n, page in enumerate(pdfium.PdfDocument(str(src)), 1):
+        img = page.render(scale=SCAN_SIDE / max(page.get_width(), page.get_height())).to_pil().convert("RGB")
+        path = out / f"{file_id}_p{n:02d}.jpg"
+        img.save(path, "JPEG", quality=82)
+        entries.append({"file": name, "loc": f"p. {n}", "image": str(path.relative_to(ROOT)),
+                        "text": norm(texts.get(str(n), "")), "kind": "scan",
+                        "edited": bool(edited[n - 1]) if n <= len(edited) else False})
+    return entries
 
 
 def count_pages(path, fmt):
@@ -119,7 +165,8 @@ def _docling():
 def read_document(src, fmt, name, out):
     """Docling -> <out>.md, and for paged formats <out>.pages.md ('## page N' per page or slide)."""
     from repair_tables import repair_document
-    doc = _docling().convert(src).document
+    with _read_lock:
+        doc = _docling().convert(src).document
     if fmt == "PDF":
         repair_document(doc, src)
     md, _ = normalize_text(doc.export_to_markdown(page_break_placeholder="\n\n<!-- page break -->\n\n"))
@@ -133,6 +180,18 @@ def read_document(src, fmt, name, out):
         pages_md = out.with_suffix(".pages.md")
         pages_md.write_text("\n".join(parts), encoding="utf-8")
     return doc, pages_md or out.with_suffix(".md")
+
+
+def read_scan_page(jpeg):
+    """One straightened page's text, read the way a saved scan is read (a one-page PDF
+    through Docling's OCR), so what the student checks is what gets indexed."""
+    import scan
+    from docling.datamodel.base_models import DocumentStream
+    pdf = scan.assemble_pdf([jpeg])
+    with _read_lock:
+        doc = _docling().convert(DocumentStream(name="page.pdf", stream=io.BytesIO(pdf))).document
+    md, _ = normalize_text(doc.export_to_markdown(page_no=1) if doc.pages else doc.export_to_markdown())
+    return md.replace(F.PLACEHOLDER, "").strip()
 
 
 def read_text(src, out):
@@ -218,36 +277,43 @@ def describe_figure(c, path):
     return (keep_sections(text, F.SECTIONS) + "\n" + conn_md).strip(), [usage] + conn_usage
 
 
-def pdf_pictures(c, doc, src, file_id, lib, progress):
-    """Crop, describe and insert the pictures of one PDF. Returns (pictures.json entries, usages)."""
+def pdf_pictures(c, doc, src, file_id, lib, progress, scanned=False):
+    """Crop, describe and insert the pictures of one PDF. Returns (pictures.json entries, usages,
+    one (page, description) per placeholder in order: None = not described, "" = left out)."""
     import pypdfium2 as pdfium
     pics = doc.export_to_dict().get("pictures", [])
     if not pics:
         return [], [], []
     pdf, figs = pdfium.PdfDocument(str(src)), lib / "figures"
     figs.mkdir(exist_ok=True)
-    crops = []
+    crops, whole = [], set()
     for i, pic in enumerate(pics):
         prov = pic["prov"][0]
         b, page = prov["bbox"], pdf[prov["page_no"] - 1]
         h = page.get_height()
+        if scanned and abs((b["r"] - b["l"]) * (b["t"] - b["b"])) >= PAGE_PICTURE * page.get_width() * h:
+            whole.add(i)  # the photographed page itself: shown whole as the scan, never described
+            continue
         box = (int((b["l"] - F.PAD) * F.SCALE), int((h - b["t"] - F.PAD) * F.SCALE),
                int((b["r"] + F.PAD) * F.SCALE), int((h - b["b"] + F.PAD) * F.SCALE))
         path = figs / f"{file_id}_p{prov['page_no']:02d}_{i:02d}.png"
         page.render(scale=F.SCALE).to_pil().crop(box).save(path)
-        crops.append((path, prov["page_no"]))
+        crops.append((path, prov["page_no"], i))
     todo = crops[:MAX_PICTURES]
-    progress(f"Reading {len(todo)} picture{'s' if len(todo) != 1 else ''}")
+    if todo:
+        progress(f"Reading {len(todo)} picture{'s' if len(todo) != 1 else ''}")
     with ThreadPoolExecutor(4) as pool:
         described = list(pool.map(lambda pp: describe_figure(c, pp[0]), todo))
-    usages, bodies = [], []
-    for (path, page), (body, us) in zip(todo, described):
+    usages, bodies, by_index = [], [], {}
+    for (path, page, i), (body, us) in zip(todo, described):
         path.with_suffix(".md").write_text(body + "\n", encoding="utf-8")
         usages += us
         bodies.append((path, page, body))
+        by_index[i] = body
     entries = [{"file": None, "loc": f"p. {page}", "image": str(path.relative_to(ROOT)), "text": norm(body), "kind": _kind(body)}
                for path, page, body in bodies]
-    return entries, usages, [(page, body) for _, page, body in bodies] + [(page, None) for _, page in crops[MAX_PICTURES:]]
+    figures = [(pic["prov"][0]["page_no"], "" if i in whole else by_index.get(i)) for i, pic in enumerate(pics)]
+    return entries, usages, figures
 
 
 def insert_figures(path, figures):
@@ -258,7 +324,10 @@ def insert_figures(path, figures):
         return  # Docling's markdown and its picture list disagree: leave the placeholders
     out = parts[0]
     for n, ((page, body), rest) in enumerate(zip(figures, parts[1:]), 1):
-        out += (F.as_inline(body, page, n) if body else f"[Picture on p. {page} - not described: over {MAX_PICTURES} per file]") + rest
+        if body is None:
+            out += f"[Picture on p. {page} - not described: over {MAX_PICTURES} per file]" + rest
+        else:
+            out += (F.as_inline(body, page, n) if body else "") + rest
     path.write_text(out, encoding="utf-8")
 
 
@@ -344,20 +413,42 @@ def process(file_id):
                 body = parsed = out.with_suffix(".md")
                 body.write_text(desc + "\n", encoding="utf-8")
                 pictures = [{"file": name, "loc": "", "image": f["path"], "text": norm(desc), "kind": _kind(desc)}]
+            elif fmt == "PDF" and (checked := src.parent / "pages.json").exists():
+                # A scan whose pages the student checked (and may have corrected) before saving:
+                # index that text as it stands; no second reading.
+                progress("Indexing the checked pages")
+                pages = json.loads(checked.read_text(encoding="utf-8"))
+                body = out.with_suffix(".pages.md")
+                body.write_text("\n".join([f"# {name}", ""] + [x for n, pg in enumerate(pages, 1)
+                                                               for x in (f"## page {n}", "", pg["text"], "")]), encoding="utf-8")
+                parsed = out.with_suffix(".md")
+                parsed.write_text("\n\n<!-- page break -->\n\n".join(pg["text"] for pg in pages), encoding="utf-8")
+                pictures = scan_pages(src, file_id, lib, name, body, [pg.get("edited") for pg in pages])
             else:
-                progress("Reading the text, tables and equations" if fmt == "PDF" else "Reading the text")
+                scanned = fmt == "PDF" and (f.get("scanned") or is_scanned(src))
+                if scanned and not f.get("scanned"):
+                    db.run("UPDATE files SET scanned = true WHERE id = %s", (file_id,))
+                progress("Reading the scanned pages" if scanned else
+                         "Reading the text, tables and equations" if fmt == "PDF" else "Reading the text")
                 doc, body = read_document(src, fmt, name, out)
                 parsed = out.with_suffix(".md")
                 if fmt == "PDF":
-                    pictures, us, figures = pdf_pictures(c, doc, src, file_id, lib, progress)
+                    # Each scanned page's OCR text is taken before picture descriptions go in,
+                    # so a quote that matches it really came from the OCR.
+                    pages = scan_pages(src, file_id, lib, name, body) if scanned else []
+                    pictures, us, figures = pdf_pictures(c, doc, src, file_id, lib, progress, scanned)
                     usages += us
                     for p in pictures:
                         p["file"] = name
+                    pictures += pages
                     if figures:
                         for path in {body, parsed}:
                             insert_figures(path, figures)
             progress("Indexing for search")
             chunks = make_chunks(name, fmt, body, file_id)
+            if not chunks:
+                raise NoText(f"No readable text found in {name}." + (
+                    " If it is a photo or scan, try a sharper, brighter picture." if fmt in ("PDF", "Image") else ""))
             embed_tokens = index(f["library_id"], chunks)
             if pictures:
                 _pictures_json(lib, lambda pics: [p for p in pics if p["file"] != name] + pictures)
@@ -376,7 +467,7 @@ def process(file_id):
         traceback.print_exc()
         remove_indexes(f)  # nothing half-indexed stays searchable
         db.run("UPDATE files SET status = 'failed', progress = NULL, error = %s WHERE id = %s",
-               (f"{type(e).__name__}: {str(e)[:200]}", file_id))
+               (str(e)[:240] if isinstance(e, NoText) else f"{type(e).__name__}: {str(e)[:200]}", file_id))
         db.run("UPDATE users SET files_used = GREATEST(files_used - 1, 0), pages_used = GREATEST(pages_used - %s, 0) "
                "WHERE id = %s", (f["pages"], f["user_id"]))  # a failed upload does not use up the limit
 
@@ -410,7 +501,8 @@ def delete(f):
     lib = lib_dir(f["library_id"])
     shutil.rmtree(lib / "files" / str(f["id"]), ignore_errors=True)
     shutil.rmtree(lib / "sheets" / str(f["id"]), ignore_errors=True)
-    for made in [*(lib / "parsed").glob(f"{f['id']}.*"), *(lib / "figures").glob(f"{f['id']}_p*")]:
+    for made in [*(lib / "parsed").glob(f"{f['id']}.*"), *(lib / "figures").glob(f"{f['id']}_p*"),
+                 *(lib / "scans").glob(f"{f['id']}_p*")]:
         made.unlink(missing_ok=True)
     # Saved answers keep the excerpts they were written from (the Sources panel): drop this file's text there too.
     for m in db.all_("SELECT id, answer FROM messages WHERE user_id = %s", (f["user_id"],)):

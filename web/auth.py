@@ -156,10 +156,19 @@ def _session_id(access_token):
         return None
 
 
-def logout_url(sid, return_to):
+def end_session(sid):
+    """End the WorkOS session too (else AuthKit's page signs the user straight back in).
+
+    Done server to server (revoke_session), not by sending the browser to WorkOS's
+    logout page: that page shows an error unless the return address is registered
+    as a Logout URI in the WorkOS dashboard (seen 21 Oct 2026: every sign-out
+    failed). Best effort - signing out here never fails because of it."""
     if not (LOGIN_SERVICE and sid):
-        return None
-    return _client().user_management.get_logout_url(session_id=sid, return_to=return_to)
+        return
+    try:
+        _client().user_management.revoke_session(session_id=sid)
+    except Exception as e:  # noqa: BLE001
+        print(f"[logout] WorkOS session not revoked: {type(e).__name__}", flush=True)
 
 
 # ---- The session -------------------------------------------------------------

@@ -1,6 +1,8 @@
 # Exact versions used to build and score the eval (Python 3.13.7, Apple Silicon, 17-18 Oct 2026).
 # Install: python3.13 -m venv .venv && .venv/bin/pip install -r requirements.txt
 docling==2.139.0          # PDF/Word parsing, formula enrichment (pulls in torch)
+rapidocr==3.10.0          # OCR for scanned pages (Docling's engine; scan.py's readability check)
+opencv-python-headless==5.0.0.93  # straightening phone photos of pages (scan.py)
 torch==2.14.1
 pypdfium2==5.14.0         # PDF word positions (table repair) and page renders (figure crops)
 pillow==12.3.0

@@ -46,8 +46,11 @@ a.file:hover .ext { background: var(--panel); }
 .file .name { font-weight: 500; color: var(--ink); }
 .file .mute { color: var(--mute); font-size: 12.5px; }
 .file .bad { color: #b91c1c; font-size: 12.5px; }
-.file .del { position: absolute; right: 4px; top: 8px; opacity: 0; }
-.file:hover .del, .file:focus-within .del, .file .del:focus { opacity: 1; }
+.frow { position: relative; }
+.frow .file { padding-right: 36px; }
+.frow .del { position: absolute; right: -4px; top: 9px; opacity: 0; }
+.frow:hover .del, .frow:focus-within .del { opacity: 1; }
+@media (hover: none) { .frow .del { opacity: 1; } }  /* phones have no hover: always show it */
 .del { border: 0; background: transparent; color: var(--mute); cursor: pointer; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; }
 .del:hover { background: #fee2e2; color: #b91c1c; }
 .del svg { width: 15px; height: 15px; }
@@ -121,6 +124,55 @@ table { border-collapse: collapse; font-size: 13px; } td, th { border-bottom: 1p
 .scrim { display: none; }
 
 /* Narrow screens: the Library and Sources slide over the chat and start closed. */
+/* Scanning pages: the review sheet */
+dialog.scan { width: min(760px, 94vw); padding: 0; overflow: hidden; }
+.scan .sh { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 18px 20px 6px; }
+.scan .sh h2 { margin: 0; font-size: 22px; }
+.scan .tip { color: var(--mute-2); font-size: 13.5px; padding: 0 20px 12px; }
+.scan .body { padding: 4px 20px 16px; max-height: min(62vh, 620px); overflow-y: auto; }
+.pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 12px; }
+.pg { margin: 0; min-width: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); padding: 7px; display: grid; gap: 6px; }
+.pg.warn { border-color: var(--warn-line); background: var(--warn-bg); }
+.pg .shot { position: relative; aspect-ratio: 3 / 4; border-radius: 9px; overflow: hidden; background: var(--soft); display: grid; place-items: center; }
+.pg .shot img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.pg .num { position: absolute; left: 6px; top: 6px; background: rgba(2, 6, 23, .78); color: #fff; font: 600 11.5px/1 var(--font-sans); border-radius: 999px; padding: 4px 8px; }
+.pg .state { font-size: 12px; color: var(--mute-2); min-height: 16px; }
+.pg.warn .state { color: var(--warn-ink); font-weight: 600; }
+.pg.bad .state { color: #b91c1c; }
+.pg .acts { display: grid; grid-template-columns: 1fr 2.2fr 1fr 1fr; gap: 4px; }
+.pg .acts button { min-width: 0; padding: 0; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; font: 600 12px/1 var(--font-sans); display: grid; place-items: center; }
+.pg .acts button:hover { background: var(--soft); }
+.pg .acts button:disabled { opacity: .35; cursor: default; }
+.pg .acts svg { width: 14px; height: 14px; }
+.scan .add { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.scan .name { display: grid; gap: 6px; margin-top: 16px; font-size: 13px; font-weight: 600; color: var(--mute-2); }
+.scan .name input { font: 15px/1.4 var(--font-sans); color: var(--ink); background: var(--panel); border: 1px solid var(--line-2); border-radius: 12px; padding: 10px 12px; width: 100%; }
+.scan .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--line); background: var(--panel); }
+.scan .foot .count { font-size: 13px; color: var(--mute-2); }
+.scan .foot .btns { display: flex; gap: 8px; margin-left: auto; }
+.scan .msg { color: #b91c1c; font-size: 13px; padding: 0 20px 8px; }
+.scan .empty-pages { border: 2px dashed var(--line-2); border-radius: 16px; padding: 30px 16px; text-align: center; color: var(--mute-2); font-size: 14px; }
+.lib-actions .row2 { display: flex; flex-wrap: wrap; gap: 8px; }
+.pg .check { width: 100%; height: 32px; border-radius: 8px; border: 1px solid var(--ink-strong); background: var(--ink-strong); color: #fff; cursor: pointer;
+  font: 600 12.5px/1 var(--font-sans); }
+.pg .check:hover { background: #1e293b; }
+.pg .edited { position: absolute; right: 6px; top: 6px; background: #fef3c7; color: #92400e; font: 600 11px/1 var(--font-sans); border-radius: 999px; padding: 4px 8px; }
+/* Checking one page's text */
+.scan .edit { padding: 4px 20px 16px; max-height: min(66vh, 680px); overflow-y: auto; }
+.edit-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.edit-head b { font: 600 16px/1 var(--font-sans); color: var(--ink-strong); }
+.edit-head .tag { font-size: 12px; font-weight: 600; color: var(--warn-ink); background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: 999px; padding: 3px 9px; }
+.edit-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 16px; align-items: start; }
+.edit-img { margin: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); overflow: auto; max-height: 56vh; cursor: zoom-in; }
+.edit-img img { display: block; width: 100%; }
+.edit-img.zoom { cursor: zoom-out; } .edit-img.zoom img { width: 220%; max-width: none; }
+.edit-text label { display: block; font-size: 13px; color: var(--mute-2); margin-bottom: 8px; }
+.edit-text textarea { width: 100%; min-height: 44vh; resize: vertical; font: 13.5px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink);
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 12px; padding: 10px 12px; }
+.edit-text textarea:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
+.edit-acts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; margin-top: 10px; }
+
 @media (max-width: 1100px) {
   .wrap, .wrap.no-lib, .wrap.no-src, .wrap.no-lib.no-src { grid-template-columns: minmax(0, 1fr); }
   main { grid-column: 1; }
@@ -130,7 +182,16 @@ table { border-collapse: collapse; font-size: 13px; } td, th { border-bottom: 1p
   .wrap:not(.no-lib) ~ .scrim, .wrap:not(.no-src) ~ .scrim { display: block; position: fixed; inset: 0; z-index: 25; background: rgba(2, 6, 23, .3); }
   header.top .who { display: none; }
 }
-@media (max-width: 520px) { .icon-btn .lbl { display: none; } .composer .hint { display: none; } }
+@media (max-width: 520px) { .icon-btn .lbl { display: none; } .composer .hint { display: none; }
+  dialog.scan { width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; border-radius: 0; border: 0; display: none; }
+  dialog.scan[open] { display: flex; flex-direction: column; }
+  .scan .sh { padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
+  .scan .body { max-height: none; flex: 1; }
+  .pages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .scan .edit { max-height: none; flex: 1; }
+  .edit-grid { grid-template-columns: minmax(0, 1fr); }
+  .edit-img { max-height: 34vh; }
+  .edit-text textarea { min-height: 34vh; } }
 @media (prefers-reduced-motion: reduce) { .spin { animation: none; } .xc.flash { animation: none; } }
 </style></head>
 <body>
@@ -166,7 +227,7 @@ table { border-collapse: collapse; font-size: 13px; } td, th { border-bottom: 1p
       <label class="search"><span id="search-ico"></span><input id="find" type="search" placeholder="Search your files" aria-label="Search your files"></label>
       <div id="files"></div>
       <div class="lib-actions">
-        <button class="btn ghost small" id="add-btn" style="justify-self:start">Add files</button>
+        <div class="row2"><button class="btn ghost small" id="add-btn">Add files</button><button class="btn ghost small" id="scan-lib">Scan pages</button></div>
         <div class="hint" id="add-hint">Or drag files into the chat.</div>
       </div>
     </aside>
@@ -178,7 +239,7 @@ table { border-collapse: collapse; font-size: 13px; } td, th { border-bottom: 1p
         <form class="composer" id="ask">
           <div class="ups" id="ups" hidden></div>
           <textarea id="question" rows="2" placeholder="Ask about your course material…"></textarea>
-          <div class="row"><div class="left"><button type="button" class="attach" id="attach" title="Add files to your Library" aria-label="Add files"></button>
+          <div class="row"><div class="left"><button type="button" class="attach" id="attach" title="Add files to your Library" aria-label="Add files"></button><button type="button" class="attach" id="scan-btn" title="Scan printed pages with your camera" aria-label="Scan pages"></button>
             <span class="hint">Enter to send · Shift+Enter for a new line</span></div>
             <button class="send" id="send" aria-label="Ask"></button></div></form>
       </div></div>
@@ -191,6 +252,29 @@ table { border-collapse: collapse; font-size: 13px; } td, th { border-bottom: 1p
   <div class="scrim" id="scrim"></div>
 </div>
 <input type="file" id="pick" multiple hidden accept=".pdf,.docx,.pptx,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx">
+<input type="file" id="cam" hidden accept="image/*" capture="environment">
+<input type="file" id="gallery" hidden accept="image/*" multiple>
+<dialog id="scan" class="scan" aria-labelledby="scan-title">
+  <div class="sh"><h2 id="scan-title">Scan pages</h2><button class="icon-btn bare" id="scan-x" aria-label="Close"></button></div>
+  <div class="tip" id="scan-tip">Printed pages only for now. Lay each page on a darker surface, fill the frame and hold still. Anchor straightens each photo and reads its text; check and fix the text before you save.</div>
+  <div class="msg" id="scan-msg" hidden></div>
+  <div class="body">
+    <div class="pages" id="scan-pages"></div>
+    <div class="add"><button class="btn" id="scan-take">Take photo</button><button class="btn ghost" id="scan-choose">Choose photos</button></div>
+    <label class="name">Name<input id="scan-name" maxlength="80"></label>
+  </div>
+  <div class="edit" id="scan-edit" hidden>
+    <div class="edit-head"><button class="btn ghost small" id="edit-back">← All pages</button><b id="edit-title">Page 1</b><span class="tag" id="edit-tag" hidden>Edited</span></div>
+    <div class="edit-grid">
+      <figure class="edit-img" id="edit-fig" title="Tap to zoom"><img id="edit-img" alt=""></figure>
+      <div class="edit-text"><label for="edit-area">What Anchor read from this page. Fix any word it got wrong: answers will quote this text, and still show the page.</label>
+        <textarea id="edit-area" spellcheck="true"></textarea>
+        <div class="edit-acts"><button class="btn ghost small" id="edit-undo">Undo my changes</button><button class="btn small" id="edit-done">Done</button></div></div>
+    </div>
+  </div>
+  <div class="foot"><span class="count" id="scan-count">No pages yet</span>
+    <div class="btns"><button class="btn ghost" id="scan-cancel">Cancel</button><button class="btn" id="scan-save" disabled>Save to Library</button></div></div>
+</dialog>
 <div class="drop" id="drop" hidden><div class="box"><b>Drop to add to your Library</b><span>PDF, Word, PowerPoint, notes, pictures and spreadsheets</span></div></div>
 
 <dialog id="admin"><h2 style="margin-top:0;font-size:20px">Users</h2><div id="budget" style="color:var(--mute-2);font-size:13.5px;margin-bottom:10px"></div>
@@ -207,11 +291,14 @@ const ICON = {
   close: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
   search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>`,
   plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`,
+  camera: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>`,
+  left: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>`,
+  right: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>`,
   trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>`,
 };
 $("logo1").outerHTML = ANCHOR_SVG; $("logo2").outerHTML = ANCHOR_SVG; $("send").innerHTML = SEND_SVG;
 $("lib-btn").innerHTML = ICON.lib + `<span class="lbl">Library</span>`; $("src-btn").innerHTML = ICON.src + `<span class="lbl">Sources</span>`;
-$("lib-hide").innerHTML = ICON.close; $("src-hide").innerHTML = ICON.close; $("search-ico").outerHTML = ICON.search; $("attach").innerHTML = ICON.plus;
+$("lib-hide").innerHTML = ICON.close; $("src-hide").innerHTML = ICON.close; $("search-ico").outerHTML = ICON.search; $("attach").innerHTML = ICON.plus; $("scan-btn").innerHTML = ICON.camera; $("scan-x").innerHTML = ICON.close;
 
 async function api(path, opts = {}) {
   const r = await fetch(path, {headers: {"Content-Type": "application/json"}, credentials: "same-origin", ...opts});
@@ -269,7 +356,7 @@ function renderFiles() {
                                        : `<div class="file">${inner}</div>`;
       const ask = confirming === f.id ? `<div class="confirm">Delete it from your Library and every search index?
           <button class="btn small danger" data-yes="${f.id}">Delete</button><button class="btn ghost small" data-no>Keep</button></div>` : "";
-      return `<div style="position:relative">${row}${del}</div>${ask}`;
+      return `<div class="frow">${row}${del}</div>${ask}`;
     }).join("");
 }
 $("find").addEventListener("input", renderFiles);
@@ -330,6 +417,157 @@ function trackUploads() {
 }
 $("attach").onclick = $("add-btn").onclick = () => $("pick").click();
 $("pick").onchange = () => { upload([...$("pick").files]); $("pick").value = ""; };
+// ---- Scanning printed pages: photos -> straightened on the server (/api/scan/page) -> reviewed here ->
+// saved as one PDF (/api/scan), read by OCR like any upload. Pages stay in this browser until Save.
+let scanPages = [], retakeAt = null, discarding = false, scanSeq = 0;
+const SCAN_SIDE = 2400;
+function scanName() {
+  const d = new Date(), mon = d.toLocaleString("en-GB", {month: "short"});
+  return `Scan ${d.getDate()} ${mon}, ${String(d.getHours()).padStart(2, "0")}.${String(d.getMinutes()).padStart(2, "0")}`;
+}
+function openScan() {
+  if (!me || me.sample_library) return;
+  const L = me.limits, full = L.files_limit !== null && L.files_used >= L.files_limit;
+  scanPages.forEach(p => p.url && URL.revokeObjectURL(p.url));
+  scanPages = []; retakeAt = null; discarding = false;
+  $("scan-name").value = scanName();
+  $("scan-msg").hidden = !full;
+  $("scan-msg").textContent = full ? `You have added your ${L.files_limit} file. This is a demo to try; an Admin can reset your upload.` : "";
+  $("scan-take").disabled = $("scan-choose").disabled = full;
+  renderScan();
+  $("scan").showModal();
+}
+// The photo, made smaller here before it is sent: upright, at most SCAN_SIDE pixels, as a JPEG
+// (re-drawing it also drops the photo's location data).
+async function shrink(file) {
+  try {
+    const bmp = await createImageBitmap(file, {imageOrientation: "from-image"});
+    const s = Math.min(1, SCAN_SIDE / Math.max(bmp.width, bmp.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(bmp.width * s); c.height = Math.round(bmp.height * s);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    return await new Promise(res => c.toBlob(b => res(b || file), "image/jpeg", 0.88));
+  } catch { return file; }
+}
+async function addPhoto(file, at) {
+  const page = {key: ++scanSeq, state: "working", note: "Straightening…"};
+  if (at === null || at === undefined) scanPages.push(page);
+  else { const old = scanPages[at]; if (old?.url) URL.revokeObjectURL(old.url); scanPages[at] = page; }
+  renderScan();
+  try {
+    const fd = new FormData(); fd.append("photo", await shrink(file), "page.jpg");
+    const r = await fetch("/api/scan/page", {method: "POST", body: fd, credentials: "same-origin"});
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.detail || ("Error " + r.status));
+    const bytes = Uint8Array.from(atob(data.page), c => c.charCodeAt(0));
+    page.blob = new Blob([bytes], {type: "image/jpeg"});
+    page.url = URL.createObjectURL(page.blob);
+    Object.assign(page, {state: "reading", note: "Reading the text…", check: data.check, cropped: data.cropped});
+  } catch (err) { Object.assign(page, {state: "bad", note: err.message}); renderScan(); return; }
+  renderScan();
+  // Read now, the way the saved scan will be read, so the student can check and fix it first.
+  try {
+    const fd = new FormData(); fd.append("page", page.blob, "page.jpg");
+    const r = await fetch("/api/scan/read", {method: "POST", body: fd, credentials: "same-origin"});
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.detail || ("Error " + r.status));
+    page.ocr = page.text = data.text;
+  } catch (err) { page.ocr = page.text = ""; page.readError = err.message; }
+  pageState(page);
+  renderScan();
+}
+const wordCount = t => (t || "").split(/\s+/).filter(Boolean).length;
+function pageState(page) {
+  const words = wordCount(page.text), edited = page.text !== page.ocr;
+  if (!page.check?.ok) Object.assign(page, {state: "warn", note: page.check?.why || "Hard to read"});
+  else if (!words) Object.assign(page, {state: "warn", note: page.readError || "No text read - retake, or type it in."});
+  else Object.assign(page, {state: "ready", note: `${words} words ${edited ? "(edited)" : "read"}`});
+}
+function renderScan() {
+  const n = scanPages.length, working = scanPages.some(p => p.state === "working" || p.state === "reading");
+  const usable = scanPages.filter(p => p.blob).length;
+  $("scan-pages").innerHTML = !n ? `<div class="empty-pages" style="grid-column:1/-1">Take a photo of the first page.</div>`
+    : scanPages.map((p, i) => `<figure class="pg ${p.state === "warn" ? "warn" : p.state === "bad" ? "bad" : ""}" data-i="${i}">
+        <div class="shot">${p.url ? `<img src="${p.url}" alt="Page ${i + 1}">` : `<span class="spin" style="width:22px;height:22px"></span>`}<span class="num">Page ${i + 1}</span>${p.text !== p.ocr ? `<span class="edited">Edited</span>` : ""}</div>
+        <div class="state">${p.state === "reading" ? `<span class="spin"></span>` : ""}${esc(p.note)}${p.state === "warn" && p.check && !p.check.ok ? " Retake?" : ""}</div>
+        ${p.ocr !== undefined ? `<button class="check" data-a="text" aria-label="Check the text of page ${i + 1}">Check text</button>` : ""}
+        <div class="acts"><button data-a="left" aria-label="Move page ${i + 1} earlier" ${i === 0 || p.state === "working" ? "disabled" : ""}>${ICON.left}</button>
+          <button data-a="retake" aria-label="Retake page ${i + 1}" ${p.state === "working" ? "disabled" : ""}>Retake</button>
+          <button data-a="del" aria-label="Delete page ${i + 1}" ${p.state === "working" ? "disabled" : ""}>${ICON.trash}</button>
+          <button data-a="right" aria-label="Move page ${i + 1} later" ${i === n - 1 || p.state === "working" ? "disabled" : ""}>${ICON.right}</button></div></figure>`).join("");
+  const warns = scanPages.filter(p => p.state === "warn").length;
+  $("scan-count").textContent = !n ? "No pages yet" : `${usable} page${usable === 1 ? "" : "s"}` + (working ? " · straightening…" : "") +
+    (warns ? ` · ${warns} hard to read` : "");
+  $("scan-save").disabled = working || !usable || !$("scan-msg").hidden;
+  $("scan-cancel").textContent = discarding ? `Discard ${n} page${n === 1 ? "" : "s"}?` : "Cancel";
+}
+$("scan-btn").onclick = $("scan-lib").onclick = openScan;
+$("scan-take").onclick = () => { retakeAt = null; $("cam").click(); };
+$("scan-choose").onclick = () => { retakeAt = null; $("gallery").click(); };
+$("cam").onchange = () => { const f = $("cam").files[0]; if (f) addPhoto(f, retakeAt); retakeAt = null; $("cam").value = ""; };
+$("gallery").onchange = () => { [...$("gallery").files].forEach(f => addPhoto(f, null)); $("gallery").value = ""; };
+$("scan-pages").addEventListener("click", e => {
+  const b = e.target.closest("button[data-a]"); if (!b) return;
+  const i = +b.closest(".pg").dataset.i, a = b.dataset.a;
+  if (a === "text") { editPage(i); return; }
+  if (a === "left" && i > 0) [scanPages[i - 1], scanPages[i]] = [scanPages[i], scanPages[i - 1]];
+  else if (a === "right" && i < scanPages.length - 1) [scanPages[i + 1], scanPages[i]] = [scanPages[i], scanPages[i + 1]];
+  else if (a === "del") { const [gone] = scanPages.splice(i, 1); if (gone.url) URL.revokeObjectURL(gone.url); }
+  else if (a === "retake") { retakeAt = i; $("cam").click(); return; }
+  discarding = false; renderScan();
+});
+let editing = null;  // the page whose text is open
+function editPage(i) {
+  editing = scanPages[i];
+  $("edit-title").textContent = `Page ${i + 1}`;
+  $("edit-img").src = editing.url; $("edit-img").alt = `Photo of page ${i + 1}`;
+  $("edit-fig").classList.remove("zoom");
+  $("edit-area").value = editing.text;
+  $("edit-tag").hidden = editing.text === editing.ocr;
+  document.querySelector("#scan .body").hidden = true; $("scan-tip").hidden = true; $("scan-edit").hidden = false;
+  $("edit-area").focus({preventScroll: true});
+}
+function closeEdit() {
+  if (editing) pageState(editing);
+  editing = null;
+  $("scan-edit").hidden = true; document.querySelector("#scan .body").hidden = false; $("scan-tip").hidden = false;
+  renderScan();
+}
+$("edit-area").addEventListener("input", () => { if (!editing) return; editing.text = $("edit-area").value; $("edit-tag").hidden = editing.text === editing.ocr; });
+$("edit-undo").onclick = () => { if (!editing) return; editing.text = editing.ocr; $("edit-area").value = editing.ocr; $("edit-tag").hidden = true; };
+$("edit-done").onclick = $("edit-back").onclick = closeEdit;
+$("edit-fig").onclick = () => $("edit-fig").classList.toggle("zoom");
+
+function closeScan() {
+  if (editing) closeEdit(); scanPages.forEach(p => p.url && URL.revokeObjectURL(p.url)); scanPages = []; $("scan").close(); }
+$("scan-x").onclick = closeScan;
+$("scan-cancel").onclick = () => {
+  if (scanPages.length && !discarding) { discarding = true; renderScan(); return; }
+  closeScan();
+};
+$("scan").addEventListener("cancel", e => { if (scanPages.length) { e.preventDefault(); discarding = true; renderScan(); } });
+$("scan-save").onclick = async () => {
+  const pages = scanPages.filter(p => p.blob);
+  if (!pages.length) return;
+  $("scan-save").disabled = true; $("scan-save").textContent = "Saving…";
+  const fd = new FormData();
+  if (editing) closeEdit();
+  pages.forEach((p, i) => fd.append("pages", p.blob, `page-${i + 1}.jpg`));
+  fd.append("texts", JSON.stringify(pages.map(p => ({text: p.text || "", edited: (p.text || "") !== (p.ocr || "")}))));
+  fd.append("name", $("scan-name").value.trim() || scanName());
+  try {
+    const r = await fetch("/api/scan", {method: "POST", body: fd, credentials: "same-origin"});
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.detail || ("Error " + r.status));
+    uploads.push({name: data.name, id: data.id, state: "reading", note: data.progress || "Reading the scanned pages"});
+    renderUploads();
+    closeScan();
+    await loadFiles(); refreshStatus();
+  } catch (err) {
+    $("scan-msg").hidden = false; $("scan-msg").textContent = err.message;
+  } finally { $("scan-save").textContent = "Save to Library"; renderScan(); }
+};
+
 let dragDepth = 0;
 const hasFiles = e => [...(e.dataTransfer?.types || [])].includes("Files");
 addEventListener("dragenter", e => { if (!hasFiles(e) || !me) return; e.preventDefault(); dragDepth++; $("drop").hidden = false; });
@@ -343,9 +581,11 @@ function renderEmpty() {
   const ready = files.some(f => f.status === "ready");
   el.innerHTML = ready || !me || me.sample_library
     ? `<h1>What do you want to know?</h1><p>Ask about anything in your Library. Answers quote your files, link to the exact page, and say plainly when your materials don't cover something.</p>`
-    : `<h1>Add your course files.</h1><p>Drag them here, or <a href="#" id="empty-add">choose files</a>. PDFs, Word, PowerPoint, notes, pictures and spreadsheets. Then ask anything about them.</p>`;
+    : `<h1>Add your course files.</h1><p>Drag them here, <a href="#" id="empty-add">choose files</a>, or <a href="#" id="empty-scan">scan printed pages</a> with your phone's camera. PDFs, Word, PowerPoint, notes, pictures and spreadsheets. Then ask anything about them.</p>`;
   const add = $("empty-add");
   if (add) add.onclick = e => { e.preventDefault(); $("pick").click(); };
+  const sc = $("empty-scan");
+  if (sc) sc.onclick = e => { e.preventDefault(); openScan(); };
 }
 
 // ---- Chat
@@ -381,8 +621,8 @@ async function refreshStatus() {
                                                  : `${L.questions_used} of ${L.questions_limit} questions used`);
   $("admin-btn").hidden = !L.is_admin;
   const canAdd = !me.sample_library;
-  $("attach").hidden = $("add-btn").hidden = !canAdd;
-  $("add-hint").textContent = canAdd ? "Or drag files into the chat." : "This is the sample Library: it can't be changed.";
+  $("attach").hidden = $("add-btn").hidden = $("scan-btn").hidden = $("scan-lib").hidden = !canAdd;
+  $("add-hint").textContent = canAdd ? "Or drag files into the chat. Scan printed pages with your phone's camera." : "This is the sample Library: it can't be changed.";
   return me;
 }
 
