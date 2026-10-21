@@ -133,13 +133,14 @@ def _sum_usage(usages):
             "completion_tokens": sum(u["completion_tokens"] for u in us)}
 
 
-def routed(c, row):
+def routed(c, row, tagged=None):
     """Phase 8: the router tags the question; numeric goes to the SQL route over
     the spreadsheets, falling back to hybrid search; every other tag goes to
-    hybrid search (until a stretch rung beats it on that tag)."""
+    hybrid search (until a stretch rung beats it on that tag).
+    `tagged`: (tag, usage) when the router has already run (routed_s4)."""
     import router
     import sql_route
-    tag, r_usage = router.route(c, row["question"])
+    tag, r_usage = tagged or router.route(c, row["question"])
     route = {"tag": tag, "path": "hybrid"}
     extra = [r_usage]
     result = None
@@ -157,6 +158,25 @@ def routed(c, row):
 
 routed.CHEATS = False
 
+
+def routed_s4(c, row):
+    """Stretch rung S4: routed, except that questions tagged `solve` get a worked
+    solution (worked.py: methods quoted, calculations run as code, a re-solve)."""
+    import router
+    import worked
+    tag, r_usage = router.route(c, row["question"])
+    if tag != "solve":
+        return routed(c, row, tagged=(tag, r_usage))
+    evidence = [L.as_evidence(h) for h in H.search(row["question"], K)]
+    cells, plan_usage = worked.sheet_cells(c, row["question"])
+    result = worked.solve(c, row["question"], evidence + cells)
+    result["route"] = {"tag": tag, "path": "solve", "cells": len(cells)}
+    result["route_usage"] = _sum_usage([r_usage, *plan_usage])
+    return result
+
+
+routed_s4.CHEATS = False
+
 vector_3small = _vector("3small")
 vector_bgem3 = _vector("bgem3")
 
@@ -166,4 +186,4 @@ oracle.CHEATS = True
 oracle_planted.CHEATS = True
 
 SETUPS = {f.__name__: f for f in (refuse, oracle, oracle_planted, llm_alone,
-                                   vector_3small, vector_bgem3, hybrid, routed)}
+                                   vector_3small, vector_bgem3, hybrid, routed, routed_s4)}

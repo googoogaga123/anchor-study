@@ -95,6 +95,21 @@ questions before the next was added:
 \* One miss is a scoring miss: a correct refusal worded in a way the scorer
 didn't recognise. Counts are from one run each (18 Oct 2026).
 
+**On 9 held-back questions** (the Test set, locked away while building and
+run once, on 21 Oct 2026), Anchor answered **9 of 9** correctly with **0 of 9**
+unsupported claims: 3 of 3 lookups, 3 of 3 number questions, and 3 of 3
+questions the files can't answer refused instead of guessed.
+
+**Tried and dropped: worked solutions** (stretch rung S4: a new problem solved
+with the course's methods, every calculation run as code, and a second,
+independent solve that must agree). On 7 practice questions with new numbers
+(21 Oct 2026), Anchor with worked solutions got **5 of 7**; without them, **6 of 7**.
+Of the 2 questions that reached worked solutions, it solved 1. Both were
+flagged Unsure, the wrong one and one correct answer whose second solve
+disagreed. It is not used. Anchor without it was then run once on the 3
+held-back test questions of this kind: **2 of 3** correct, both flagged Unsure;
+the miss asked about a spreadsheet (see Known limits).
+
 ## 5. External tools and datasets
 
 - **Models and APIs:** OpenAI API (GPT-5.6 Luna for answering, routing,
@@ -177,7 +192,10 @@ never put that version online.
 - The grader was tested with planted false claims before it was trusted.
 - The checker was compared with separate labels on 30 sampled answers: it agreed on 25,
   missed 2 bad answers (the limit set in advance was 2) and wrongly flagged 3.
-- 9 held-back test questions are kept unopened for one final run.
+- 9 held-back test questions, kept unopened while building, were run once on
+  21 Oct 2026: 9 of 9 correct, 0 unsupported claims, 0 Unsure.
+- 3 more held-back questions, new problems to work out, were run once on
+  21 Oct 2026: 2 of 3 correct, 1 unsupported claim, 2 Unsure.
 - **Scanning (20 Oct 2026):**
   - **OCR on clean pages:** the IS114 handout's 10 pages, rendered as images,
     gave back 1,921 of the original's 1,989 words, with both tables' rows and
@@ -194,6 +212,9 @@ never put that version online.
 - **Unchecked arithmetic.** The checker verifies quotes, not sums or dates
   worked out from them. In a live test Anchor said a quiz closes on 31/8 when
   the files imply Sunday 30/8, and it wasn't flagged.
+- **A new problem about a spreadsheet isn't read from it.** Only number
+  questions go to the spreadsheets; a problem to work out from one is
+  answered from searched files instead and can come back "Not found".
 - **Stretched conclusions can pass.** Both checker misses quoted real text but
   concluded more than it said (for example, applying one exam question's
   numbers to another).

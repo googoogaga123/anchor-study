@@ -20,6 +20,7 @@
 .plan .btn[aria-disabled="true"] { opacity: .45; cursor: default; pointer-events: none; }
 .contact { display: grid; gap: 8px; margin: 22px 0 28px; flex: 1; align-content: start; }
 .contact div { display: flex; gap: 10px; align-items: baseline; font-size: 15px; color: var(--ink); }
+.contact a.mail { font-weight: 600; color: var(--ink-strong); text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
 .contact span { flex: none; width: 52px; font-size: 13px; font-weight: 600; color: var(--mute); text-transform: uppercase; letter-spacing: .04em; }
 .contact b { font-weight: 600; overflow-wrap: anywhere; }
 @media (max-width: 960px) { .plans { grid-template-columns: minmax(0, 1fr); max-width: 520px; margin: 0 auto; } .plan .who { min-height: 0; } }
@@ -66,7 +67,7 @@
       <div class="price talk">Let's talk</div>
       <div class="who">For schools, faculties and companies: a proposal shaped around your courses and your people.</div>
       <div class="contact">
-        <div><span>Email</span><b>contactus@anchor.com</b></div>
+        <div><span>Email</span><a class="mail" href="mailto:thatpangsaiguy@gmail.com?subject=Anchor%20Business%20plan">contactus@anchor.com</a></div>
         <div><span>Call</span><b>98485438</b></div>
       </div>
       <span class="btn ghost" aria-disabled="true">Contact us</span>

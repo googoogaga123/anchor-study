@@ -18,7 +18,7 @@ from psycopg.rows import dict_row
 
 MEMBER_FILES, MEMBER_PAGES, MEMBER_QUESTIONS = 1, 50, 3
 ADMIN_PAGES, MAX_ADMINS = 200, 3
-DEMO_BUDGET_USD = float(os.environ.get("DEMO_BUDGET_USD", "1.00"))
+DEMO_BUDGET_USD = float(os.environ.get("DEMO_BUDGET_USD", "5.00"))  # owner, 21 Oct: $5 (was $1)
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (

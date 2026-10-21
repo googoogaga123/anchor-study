@@ -673,6 +673,7 @@ async function askStream(q, el) {
       if (!line.trim()) continue;
       const ev = JSON.parse(line);
       if (ev.type === "stage" && ev.stage === "reading") { el.answer = null; excerpts = []; show("reading", thinkingHTML(q)); sourceFor(el, "reading"); }
+      else if (ev.type === "stage" && ev.stage === "solving") { show("reading", thinkingHTML(q, "Working it out with methods from your files…")); }
       else if (ev.type === "excerpts") { excerpts = ev.excerpts; el.answer = {excerpts, steps: []}; sourceFor(el, "writing"); }
       else if (ev.type === "draft") { el.answer = {...ev.answer, excerpts}; show("writing", answerHTML(q, el.answer, {...OPTS, state: "writing"})); sourceFor(el, "writing"); }
       else if (ev.type === "stage" && ev.stage === "checking") { if (el.answer?.final_answer !== undefined) show("checking", answerHTML(q, el.answer, {...OPTS, state: "checking"})); }

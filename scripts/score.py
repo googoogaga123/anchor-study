@@ -41,7 +41,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 RUNS = ROOT / "runs"
 # partial: the materials answer part of the question (or one reading of it);
 # the right answer gives that part and says what the materials do not say.
-TAGS = ["lookup", "numeric", "partial", "not_in_docs"]
+TAGS = ["lookup", "numeric", "partial", "not_in_docs", "solve"]
 
 
 def load_questions(which, group=None):
@@ -154,7 +154,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("setup", choices=sorted(SETUPS))
     ap.add_argument("--set", default="Build", choices=["Build", "Test"])
-    ap.add_argument("--group", choices=["added"], help="score an added Build group (eval_set_<group>.csv) instead of the original questions; reported on its own")
+    ap.add_argument("--group", choices=["added", "solve"], help="score an added group (eval_set_<group>.csv) instead of the original questions; reported on its own. 'solve' (S4) has its own locked Test questions")
     ap.add_argument("--final", action="store_true", help="required to open the Test set (phase 10)")
     ap.add_argument("--ids", help="comma-separated question ids, e.g. Q01,Q22")
     ap.add_argument("--workers", type=int, default=4)
@@ -163,8 +163,8 @@ def main():
     args = ap.parse_args()
     if args.set == "Test" and not args.final:
         sys.exit("The Test set is locked until phase 10. Re-run with --set Test --final only then.")
-    if args.group and args.set != "Build":
-        sys.exit("Added groups belong to the Build set only.")
+    if args.group == "added" and args.set != "Build":
+        sys.exit("The added group belongs to the Build set only.")
 
     import setups as S
     if args.k:

@@ -99,8 +99,12 @@ def grade(c, row, result, library, effort="low"):
     step_text = "\n".join(f"{i}. {s.get('text', '')}" for i, s in enumerate(steps, 1)) or "(none)"
     gold = row["correct_answer"] if row["tag"] != "not_in_docs" else \
         "Not found in your materials (the Library does not contain this)."
+    notes = row.get("notes") or "(none)"
+    if row["tag"] == "solve":  # S4: a new problem - its figures are in the question, not the Library
+        notes += (" | This is a new problem: figures given in the question count as backed, and so does "
+                  "arithmetic on them; methods, rules and formulas must come from the Library.")
     verdict, usage = ask_json(c, GRADER_PROMPT.format(
-        question=row["question"], gold=gold, notes=row.get("notes") or "(none)",
+        question=row["question"], gold=gold, notes=notes,
         steps=step_text, final=result.get("final_answer", ""), library=library),
         effort=effort, valid=_valid)
     if row["tag"] == "not_in_docs":

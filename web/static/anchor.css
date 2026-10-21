@@ -90,6 +90,10 @@ a.ans-cite:hover { border-color: var(--ink); }
 .ans-src span { font-weight: 500; color: var(--mute-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ans-src:hover { border-color: var(--ink); background: var(--soft); }
 .ans-src svg { width: 12px; height: 12px; flex: none; }
+.ans-calc { display: block; margin-top: 6px; font-size: 13px; color: var(--ink); }
+.ans-calc code { font: 12.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--soft); border: 1px solid var(--line);
+  border-radius: 6px; padding: 1px 6px; }
+.ans-worked { margin-top: 10px; font-size: 13px; color: var(--mute-2); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 11px; }
 .ans-unsure { background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--warn-line); border-radius: 12px; padding: 9px 12px; font-size: 13.5px; margin-bottom: 4px; }
 .ans-unsure ul { margin: 4px 0 0; padding-left: 18px; }
 .ans-card figure { margin: 0; border: 1px solid var(--line); border-radius: 14px; padding: 8px; background: var(--bg); }

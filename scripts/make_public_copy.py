@@ -27,7 +27,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LEAVE_OUT = ("eval set/", "parsed/", "runs/", "phase7/", "eval_set.csv", "eval_set.xlsx",
-             "eval_set_added.csv", "router_labels.csv")
+             "eval_set_added.csv", "eval_set_solve.csv", "router_labels.csv")
 SECTIONS = ROOT / "parsed" / "IS114_AY26-T1_Course_Content_Student_Edition__pdf.md"
 EMAIL = re.compile(r"[\w.+-]+@(?:[\w-]+\.)*smu\.edu\.sg", re.I)
 

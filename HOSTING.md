@@ -74,7 +74,7 @@ The app was measured on 18 October, and no free host could run it as it is:
 - Tailscale Funnel has bandwidth limits that cannot be changed.
 
 **Running costs and limits**
-- Model calls draw on a $1 OpenAI demo budget. Members get 1 file (up to 50
+- Model calls draw on a $5 OpenAI demo budget (raised from $1 on 21 Oct). Members get 1 file (up to 50
   pages) and 3 questions; the app stops answering when the budget runs out.
 - Sign-in uses WorkOS staging keys, which are fine for a demo but not for a
   real launch.

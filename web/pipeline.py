@@ -39,6 +39,10 @@ K = 5  # chunks per answer; k scales with Library size (build plan) - 5 suits a 
 # Estimated prices, USD per million tokens (HANDOFF.md "Rough costs"). Verify on
 # the OpenAI pricing page before the public launch.
 PRICE_IN, PRICE_OUT = 0.20, 1.20
+# S4 worked solutions (worked.py) lost to the plain route on the solve questions
+# (21 Oct 2026, Build: 5 of 7 correct against 6 of 7), so `solve` goes to hybrid
+# search like every other tag. True brings worked solutions back.
+WORKED = False
 
 CONDENSE = """\
 A student is asking follow-up questions about their course materials. Rewrite
@@ -141,8 +145,11 @@ def _steps(steps, source):
         if not isinstance(s, dict) or not isinstance(s.get("text"), str):
             continue
         ev = source(s.get("source")) if isinstance(s.get("source"), str) else None
-        out.append({"text": s["text"], "quote": s.get("quote") if isinstance(s.get("quote"), str) else None,
-                    "source": {"id": ev["id"], "file": ev["file"], "loc": ev["loc"]} if ev else None})
+        step = {"text": s["text"], "quote": s.get("quote") if isinstance(s.get("quote"), str) else None,
+                "source": {"id": ev["id"], "file": ev["file"], "loc": ev["loc"]} if ev else None}
+        if s.get("calc"):  # a worked solution's calculation, run as code (worked.py)
+            step |= {"calc": s["calc"], "value": s.get("value")}
+        out.append(step)
     return out
 
 
@@ -216,6 +223,21 @@ def answer(library_id, question, history=(), emit=None):
             drafts.flush()
         else:
             emit({"type": "stage", "stage": "reading"})  # back to searching: drop the spreadsheet draft
+    if tag == "solve" and WORKED:
+        # S4: a new problem, worked with the Library's methods; calculations run as code; re-solved.
+        import worked
+        emit({"type": "stage", "stage": "solving"})
+        evidence = [L.as_evidence(h) for h in hybrid.search(standalone, K, library=lib.id)]
+        lap("search")
+        if lib.has_sheets():
+            sheet_ev, plan_usage = worked.sheet_cells(c, standalone, db=lib.sheets_db, spreadsheet=lib.spreadsheet,
+                                                      cell=lib.cell)
+            evidence += sheet_ev
+            usages += plan_usage
+        emit({"type": "excerpts", "excerpts": _excerpts(evidence)})
+        result = worked.solve(c, standalone, evidence)
+        route["path"] = "solve"
+        lap("solve")
     if result is None:
         hits = hybrid.search(standalone, K, library=lib.id)
         lap("search")

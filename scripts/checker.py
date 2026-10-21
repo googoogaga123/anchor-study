@@ -16,8 +16,13 @@ Two parts, cheapest first:
               refusal), and failed without a call when an answer was given
               with no evidence at all.
 
-An answer is Unsure when any quote fails or any step is unsupported - or not
-judged at all: the checker fails closed.
+  3. Numbers  (S4, 21 Oct 2026) every number and date in the final answer is
+              taken out and worked out again from the same excerpts, as a
+              calculation the calculator runs (number_check.py). Only when the
+              final answer has numbers.
+
+An answer is Unsure when any quote fails, any step is unsupported - or not
+judged at all (the checker fails closed) - or a number doesn't check out.
 
 The answer contract every setup returns (setups.py):
   {"final_answer": str, "not_found": bool,
@@ -123,10 +128,30 @@ def check_support(c, question, result, effort="low"):
                     effort=effort, valid=_valid_for(len(steps)), strict=False)
 
 
-def check(c, question, result):
-    """Run both parts. Returns the verdict and the LLM usage (None if no call)."""
+def _merge(*usages):
+    """One usage record for several calls (the cost ledger and run files expect one)."""
+    us = [u for u in usages if u]
+    if not us:
+        return None
+    if len(us) == 1:
+        return us[0]
+    merged = dict(us[0])
+    for key in ("prompt_tokens", "completion_tokens", "reasoning_tokens", "attempts", "seconds"):
+        merged[key] = sum(u.get(key) or 0 for u in us)
+    return merged
+
+
+def check(c, question, result, numbers=None):
+    """Run all three parts. Returns the verdict and the LLM usage (None if no call).
+    A worked solution (worked.py) skips the number check - its re-solve does that
+    job - and its own checks (calculations, re-solve) count like any other."""
+    if numbers is None:
+        numbers = result.get("kind") != "worked"
+    from number_check import check_numbers
     quotes = check_quotes(result)
     support, usage = check_support(c, question, result)
+    number_reasons, n_usage = check_numbers(c, question, result) if numbers else ([], None)
+    usage = _merge(usage, n_usage)
     reasons = [f"step {q['step']}: quote {q['status'].replace('_', ' ')}" for q in quotes
                if q["status"] != "ok"]
     if "skipped" not in support:
@@ -139,11 +164,13 @@ def check(c, question, result):
                 reasons.append(f"step {n}: not supported ({s.get('why', '')})")
         if not support.get("final_supported", True):
             reasons.append("final answer not supported")
+    reasons += number_reasons + list(result.get("worked_checks") or [])
     return {
         "quotes_total": len(quotes),
         "quotes_ok": sum(q["status"] == "ok" for q in quotes),
         "quotes": quotes,
         "support": support,
+        "numbers": number_reasons,
         "unsure": bool(reasons),
         "unsure_reasons": reasons,
     }, usage

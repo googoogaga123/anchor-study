@@ -7,7 +7,7 @@ const FILE_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 
 // What the route did, in a student's words.
 const ROUTE_WORDS = {"sql": "Read from your spreadsheet", "sql -> hybrid": "Checked your spreadsheets, then searched your files",
-                     "hybrid": "Searched your files"};
+                     "hybrid": "Searched your files", "solve": "Worked out with methods from your files"};
 
 function citeHTML(src, opts, quote) {
   if (!src) return "";
@@ -42,8 +42,9 @@ function answerHTML(question, a, opts = {}) {
   };
   const steps = steps0.map((s, i) => {
     const last = i === steps0.length - 1;
+    const calc = s.calc ? `<span class="ans-calc" title="Worked out by code, not by the AI"><code>${esc(s.calc)}</code> = <b>${s.value == null ? "couldn't be worked out" : esc(s.value)}</b></span>` : "";
     return `<li>${esc(s.text)}${last && caretAt === "text" ? caret : ""}
-      ${s.quote ? `<span class="ans-quote">“${esc(s.quote)}${last && caretAt === "quote" ? caret : "”"}</span>` : ""}${sourceOf(s, i)}</li>`;
+      ${s.quote ? `<span class="ans-quote">“${esc(s.quote)}${last && caretAt === "quote" ? caret : "”"}</span>` : ""}${calc}${sourceOf(s, i)}</li>`;
   }).join("");
   const unsure = a.unsure ? `<div class="ans-unsure"><b>Unsure</b> — part of this answer could not be confirmed against your files:
       <ul>${(a.unsure_reasons || []).map(r => `<li>${esc(r)}</li>`).join("")}</ul></div>` : "";
@@ -59,6 +60,7 @@ function answerHTML(question, a, opts = {}) {
       ${unsure}${status}
       ${route ? `<div class="ans-route">${esc(route)}</div>` : ""}
       ${final}
+      ${a.route?.path === "solve" && !a.not_found ? `<div class="ans-worked">A new problem, worked out with methods from your files - not quoted from them. Every calculation is run as code, and an independent re-solve must agree.</div>` : ""}
       ${steps ? `<div class="ans-how">How this was found</div><ol class="ans-steps">${steps}</ol>` : ""}
       ${readAs}
     </div>${pics ? `<div>${pics}</div>` : ""}</div>`;
@@ -117,9 +119,9 @@ function sourcesHTML(question, a, opts = {}, state) {
     + (rest.length ? `<div class="src-label muted">${label} (${rest.length})</div>` + rest.map(closed).join("") : "");
 }
 
-function thinkingHTML(question) {
+function thinkingHTML(question, label) {
   return `<div class="ans-q">${esc(question)}</div>
-    <div class="ans-card"><div class="thinking"><i></i><i></i><i></i> Reading your Library…</div></div>`;
+    <div class="ans-card"><div class="thinking"><i></i><i></i><i></i> ${esc(label || "Reading your Library…")}</div></div>`;
 }
 
 const ANCHOR_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V21"/><path d="M8 11h8"/><path d="M4.5 13.5a7.5 7.5 0 0 0 15 0"/><path d="M2.5 15.5l2-2 2 2"/><path d="M17.5 15.5l2-2 2 2"/></svg>`;
