@@ -110,6 +110,44 @@ disagreed. It is not used. Anchor without it was then run once on the 3
 held-back test questions of this kind: **2 of 3** correct, both flagged Unsure;
 the miss asked about a spreadsheet (see Known limits).
 
+**Next steps for retrieval** (researched 22 Oct 2026, not built yet;
+[docs/research/retrieval-vs-notebooklm.md](docs/research/retrieval-vs-notebooklm.md)):
+
+- **Chunking stays as it is.** Fact questions are 33 of 33 practice and 9 of 9
+  held-back, so a new chunking method has nothing to fix. Every miss was on a
+  new problem to work out.
+- **Send spreadsheet problems to the spreadsheet route whatever the router's tag.**
+  The same practice question was tagged "numeric" in 2 of 3 runs, and answered
+  correctly both times. The third run tagged it "solve", so it went to search,
+  which can't read spreadsheet cells.
+- **Hand over 8 chunks instead of 5.** A date question missed because the
+  week's start date sat in the 6th-ranked chunk, scored 0.2971 against
+  0.2983 for 5th.
+- **Later: put the whole Library in the prompt while it fits.** Every Library
+  Anchor allows is small (the demo is about 32k tokens; the answer model
+  accepts 922k), and published comparisons favour long context when it fits.
+  It changes every answer, so it would need all practice sets re-run.
+- **Compared with NotebookLM** (now Gemini Notebook, free plan), 22 Oct 2026:
+  the same 41 practice questions and the same files (the spreadsheet as CSV,
+  since it doesn't take .xlsx). Both systems were scored by Anchor's grader,
+  then every flagged answer was checked by eye. One run each.
+
+  | | Anchor | Gemini Notebook |
+  |---|---|---|
+  | Correct | 39 of 41 | 40 of 41 |
+  | Unsupported claims | 1 | 6 (2 of them borderline) |
+  | Refused the 11 questions the files can't answer | 11 | 10 |
+  | Wrong and not flagged | 2 | 1 |
+
+  - **Accuracy is a tie.** Gemini Notebook got the 2 problems Anchor's routing
+    missed (the two fixes above); Anchor alone refused a question the files
+    can't answer.
+  - **Anchor made fewer unsupported claims**, 1 against 6. Gemini Notebook's
+    were mostly small additions from outside the files, such as "2 images per
+    page" where the file says ">2". On 41 questions that suggests a difference
+    but doesn't prove one.
+  - The grader is an OpenAI model, the same family as Anchor's answering model.
+
 ## 5. External tools and datasets
 
 - **Models and APIs:** OpenAI API (GPT-5.6 Luna for answering, routing,
@@ -196,6 +234,27 @@ never put that version online.
   21 Oct 2026: 9 of 9 correct, 0 unsupported claims, 0 Unsure.
 - 3 more held-back questions, new problems to work out, were run once on
   21 Oct 2026: 2 of 3 correct, 1 unsupported claim, 2 Unsure.
+- **Adversarial testing (21-22 Oct 2026, [pentest.md](pentest.md)):** 18 attacks
+  on the real pipeline, in two rounds.
+  - **Round one, manipulation through content:** instructions hidden in uploaded
+    files, a planted "instructor update" ordering a false answer, a fake checker
+    verdict, prompt extraction, a jailbreak and SQL attacks.
+  - **Round two, beyond that:** script injection through file names, invisible
+    and French-language instructions, an instruction in a spreadsheet cell,
+    spoofed citations, and flooding search with copies of a false fact.
+  - **They found 5 vulnerabilities:**
+    - the planted update made Anchor state a false figure;
+    - the checker would have passed it;
+    - a SQL query could read files on the server;
+    - a calculation could exhaust memory;
+    - five copies of a false fact pushed the true file out of view.
+
+    All 5 were fixed and re-tested: every attack and isolation check now
+    passes, and so do 39 offline guardrail checks. A 41-question re-run showed
+    no loss on normal answers.
+  - **A calibration check found a gap:** across the saved runs, Unsure flagged
+    0 of the 4 wrong answers. All 4 were false "not found" answers, which make
+    no claim for the checker to test.
 - **Scanning (20 Oct 2026):**
   - **OCR on clean pages:** the IS114 handout's 10 pages, rendered as images,
     gave back 1,921 of the original's 1,989 words, with both tables' rows and

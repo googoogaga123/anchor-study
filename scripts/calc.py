@@ -98,6 +98,11 @@ def evaluate(expr, names=None):
             return -v if isinstance(node.op, ast.USub) else v
         if isinstance(node, ast.BinOp) and type(node.op) in OPS:
             a, b = ev(node.left), ev(node.right)
+            if isinstance(a, list) or isinstance(b, list):
+                # Lists exist only as arguments to sum()/min()/max(). Allowing
+                # list * int or list + list lets "[0]*10**9" build a huge list
+                # and exhaust memory (the power guard doesn't see it).
+                _fail("a list can only go inside sum(), min() or max()")
             if isinstance(node.op, ast.Pow):
                 if abs(_num(b)) > 100 or abs(_num(a)) > 10 ** 6:
                     _fail("power too large")

@@ -46,3 +46,6 @@ makendra*.md
 # Hackathon submission media (LinkedIn/Devpost), not part of the code
 submission/
 .serve_public.log
+
+# Copies of the course files for the Gemini Notebook comparison (scripts/notebooklm.py prepare)
+notebooklm_upload/

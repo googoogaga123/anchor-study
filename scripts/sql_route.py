@@ -12,8 +12,9 @@ and `labeled` (each cell with its row label and column header).
               cells the answer needs (cell_ref in every row, no arithmetic in
               SQL: sums and differences happen in the answer's steps, where
               the checker can see them).
-  2. Run      the SELECT on a read-only connection; anything but one SELECT
-              is refused. An error or no rows gets one retry with the error.
+  2. Run      the SELECT on a read-only connection with external access off
+              (no files, no URLs); anything but one SELECT is refused. An
+              error or no rows gets one retry with the error.
   3. Answer   the returned cells become evidence ("Income Statement!C13 =
               14000 (row: Net Profit)") for the same Explained-answer prompt
               as every rung, so the checker and the grader treat it alike.
@@ -88,7 +89,10 @@ def _is_one_select(sql):
 def plan_and_run(c, question, db=DB, spreadsheet=None):
     """Returns (rows or None, trace, usages). rows = list of dicts with cell_ref.
     `db`: the Library's DuckDB file (the website keeps one per Library)."""
-    con = duckdb.connect(str(db), read_only=True)
+    # Read-only stops writes, not reads: a SELECT can still call read_text('<any file>')
+    # or fetch a URL. External access off keeps model-written SQL inside this database
+    # (pentest.md: a SELECT passing the guard read a file from disk).
+    con = duckdb.connect(str(db), read_only=True, config={"enable_external_access": False})
     trace, usages, retry = {"attempts": []}, [], ""
     try:
         cat = catalog(con)

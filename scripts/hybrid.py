@@ -50,4 +50,18 @@ def rerank(question, candidates):
 def search(question, k, library=store.LIBRARY):
     """Top k chunks for a question, best first, with the scores of each stage."""
     fused = rrf(store.keyword(question, CANDIDATES, library), store.vector(question, CANDIDATES, library))
-    return rerank(question, fused[:CANDIDATES])[:k]
+    return distinct(rerank(question, fused[:CANDIDATES]))[:k]
+
+
+def distinct(ranked):
+    """Drop a chunk whose text is the same as a better-ranked one's, so the k places hold k
+    different passages. Five copies of an old reminder filled all 5 places and pushed the one
+    file that disagreed out of view, so the answer never saw the conflict (pentest.md B6).
+    The eval Library has no two chunks with the same text, so its results are unchanged."""
+    seen, out = set(), []
+    for c in ranked:
+        key = " ".join(c["text"].split()).lower()
+        if key not in seen:
+            seen.add(key)
+            out.append(c)
+    return out
